@@ -8,6 +8,8 @@ dir_of_lofreq=/picb/rnomics3/xuew/software/WGS/lofreq_star-2.1.3.1/bin
 dir_of_Strelka2=/picb/rnomics3/xuew/software/WGS/strelka-2.9.10.centos6_x86_64/bin
 dir_of_Scalpel=/picb/rnomics3/xuew/software/WGS/scalpel-0.5.4
 dir_of_Manta=/picb/rnomics3/xuew/software/anaconda2019/bin
+dir_of_perl=/picb/rnomics3/xuew/software/anaconda2019/bin
+dir_of_intersectBed=/picb/rnomics3/xuew/software/anaconda2019/bin
 #[ref_genome]
 genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed
 ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.fa
