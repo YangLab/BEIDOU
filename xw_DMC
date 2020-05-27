@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+MYDIR=`dirname $0`
+while getopts :1:2:o:n:c:t:p: ARGS  
+    do  
+    case $ARGS in   
+        1)  
+            fq1=$OPTARG
+            ;;  
+        2)  
+            fq2=$OPTARG  
+            ;; 
+        o)  
+            work_path=$OPTARG
+            ;;  
+        n)  
+            name=$OPTARG
+            ;; 
+        c)
+            tmp_config_file=$OPTARG
+            ;;
+        t)
+            threads=$OPTARG
+            ;;
+        f)
+            function=$OPTARG
+            ;;
+        *)  
+            echo "Unknown option: $ARGS"
+            ;;
+        \?)
+        echo "Invalid option: -$OPTARG" 
+        ;;
+    esac
+    done
+
+one_command_work_flow(){
+    patch_flag="False"
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads
+    bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+}
+tmp_a="aa${function}aa"
+if [ "${tmp_a}" == "aaaa" ];then
+one_command_work_flow
+
+fi
