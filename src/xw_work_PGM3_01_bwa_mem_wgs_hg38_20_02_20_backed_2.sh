@@ -54,6 +54,9 @@ while getopts :1:2:o:n:c:t:p: ARGS
         c)
             tmp_config_file=$OPTARG
             ;;
+        g)
+            genome_build_version=$OPTARG
+            ;;
         t)
             threads=$OPTARG
             ;;
@@ -79,10 +82,9 @@ Patch="True"
 else
 Patch="False"
 fi
+ref_genome=$genome_build_version
 ##To do
-#work_config: specify dir_of_individual_chr_genome_range_bed dir_of_individual_chr_ref_genome_path
 ##modification note
-#1. chrn_list=(chr{1..22} chrX chrY chrM) only suit for hg38
 #install.packages("proto", repos="https://cran.rstudio.com/")
 #packageurl <- "https://cran.r-project.org/src/contrib/Archive/ggplot2/ggplot2_1.0.1.tar.gz"
 #install.packages(packageurl, repos=NULL, type="source")
@@ -145,7 +147,7 @@ parse_parameters(){
     fi
     test -e $config_file && echo "use $config_file as config_file" 
     source $config_file
-    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta genome_range_bed ref_genome_path hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf dbsnp_vcf Mills_and_1000G_vcf)
+    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta ref_genome_path hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf dbsnp_vcf Mills_and_1000G_vcf)
     non_specified_para_list=""
     non_exists_para_list=""
     for para1 in ${para_list[@]}
@@ -166,7 +168,13 @@ parse_parameters(){
         if [[ $(echo $para1|awk -F "_" '{print $1}' ) == "dir" ]];then
         {
             if [ "$para1" == "dir_of_Strelka2" ] ;then
+
             check_status ${para1_value}/configureStrelkaGermlineWorkflow.py
+            elif [ "$para1" == "dir_of_tmp" ] ;then
+            test -w ${para1_value} || {
+                echo "dir_of_tmp need exist and writeable."
+                check_token="F"
+            }
             elif [ "$para1" == "dir_of_Scalpel" ] ;then 
             check_status ${para1_value}/scalpel-discovery 
             elif [ "$para1" == "dir_of_Manta" ] ;then
@@ -197,12 +205,27 @@ echo "[`date`]Finish parse_parameters"
 }
 check_optional_para(){
     ###### Sun Mar 1 21:06:04 CST 2020 fzc
+    
+    
+    if [ ! -s ${ref_genome_path}.fai ];then
+    if [ -w `dirname $ref_genome_path` ];then
+    ${dir_of_samtools}/samtools faidx $ref_genome_path
+    fai_file=${ref_genome_path}.fai 
+    else 
+    ln -s $ref_genome_path $dir_of_tmp
+    ${dir_of_samtools}/samtools faidx $dir_of_tmp/`basename $ref_genome_path`
+    fai_file=$dir_of_tmp/`basename $ref_genome_path`.fai 
+    fi
+    else
+    fai_file=${ref_genome_path}.fai 
+    fi
+    genome_range_bed=$dir_of_tmp/Genome_range_bed_`date +%s`.bed
+    awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$Genome_range_bed
+    chrn_list=`awk '{print $1}' $fai_file`
     para1=dir_of_individual_chr_ref_genome_path
     para1_value=`eval echo "$"$para1`
         tmp_a="aa${para1_value}aa"
         test "${tmp_a}" != "aaaa" && {
-            ref_genome=hg38
-            chrn_list=(chr{1..22} chrX chrY chrM)
             for chrn in ${chrn_list[@]}
             do 
             test -e ${para1_value}/${chrn}.fa || check_token="F"
@@ -212,16 +235,8 @@ check_optional_para(){
         }
 
     test "$check_token" == "F" && {
-        dir_of_ref_genome_path=`dirname $ref_genome_path`
-        test -r $dir_of_ref_genome_path && {
-            test -w $dir_of_ref_genome_path && tmp_sep_token="ok"
-        }
-        test "$tmp_sep_token" == "ok" && {
-            sep_work_path=$dir_of_ref_genome_path/tmp_individual_chr_ref_genome_path
-        }||{
-            sep_work_path=$work_path/tmp_individual_chr_ref_genome_path
-        }
-    memkdir $sep_work_path
+        
+    sep_work_path=$dir_of_tmp
     awk '{if ($0~/^>/){chrn=substr($0,2)}print >"'$sep_work_path'/"chrn".fa"}' $ref_genome_path
     ${dir_of_samtools}/samtools faidx ${sep_work_path}/*.fa
     }
@@ -231,8 +246,6 @@ check_optional_para(){
     para1_value=`eval echo "$"$para1`
         tmp_a="aa${para1_value}aa"
         test "${tmp_a}" != "aaaa" && {
-            ref_genome=hg38
-            chrn_list=(chr{1..22} chrX chrY chrM)
             for chrn in ${chrn_list[@]}
             do 
             test -e ${para1_value}/${chrn}.bed || check_token="F"
@@ -241,17 +254,7 @@ check_optional_para(){
             check_token="F"
         }
     test "$check_token" == "F" && {
-        dir_of_genome_range_bed=`dirname $genome_range_bed`
-        test -r $dir_of_genome_range_bed && {
-            test -w $dir_of_genome_range_bed && tmp_sep_token="ok"
-        }
-
-        test "${tmp_sep_token}" == "ok" && {
-            sep_work_path=$dir_of_genome_range_bed/tmp_individual_chr_genome_range_bed
-        }||{
-            sep_work_path=$work_path/tmp_individual_chr_genome_range_bed
-        }
-    memkdir $sep_work_path
+    sep_work_path=$dir_of_tmp
     awk '{chrn=$0;print >"'$sep_work_path'/"chrn".bed"}' $genome_range_bed
     }
 

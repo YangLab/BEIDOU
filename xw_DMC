@@ -212,9 +212,17 @@ one_command_work_flow(){
     bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
     bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
 }
+SNV_calling_work_flow(){
+    patch_flag="False"
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+}
 parse_parameters
 check_optional_para
 tmp_a="aa${function}aa"
 if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
 one_command_work_flow
+elif [ "${tmp_a}" == "aaSNVaa" ];then
+SNV_calling_work_flow
 fi
