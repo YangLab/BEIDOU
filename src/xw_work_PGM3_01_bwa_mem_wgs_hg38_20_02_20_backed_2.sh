@@ -116,6 +116,7 @@ merm(){
 memkdir $work_path
 source $tmp_config_file
 echo "[`date`] Main flow begining..."
+echo "Patch: " ${Patch}
 if [ "${Patch}" == "False" ];then
 {
 ###### Sun Mar 15 19:49:45 CST 2020
@@ -192,6 +193,7 @@ ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_pa
 
 
 if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
+echo "run in $(uname -n) end at median point" 
 wait
 exit
 fi
