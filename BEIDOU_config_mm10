@@ -18,6 +18,9 @@ dict_of_ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcripto
 dbsnp_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/NCBI_dbSNP_all_mm10.vcf #NCBI_dbSNP_b142_all_mm10.vcf.gz #Due NCBI stopped support for all non-human organisms in dbSNP, in 2017. The dbSNP file was from EVA no dbSNP release version, see the readme in the same dir for further info.  #NCBI_dbSNP_b142_all_mm10.vcf.gz
 MGP_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/MGP_SNP_indel_v5.vcf.gz 
 MGP_indel_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/MGP_indel_v5.vcf.gz #/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+#[filtering file]
+filtering_dbSNP_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/NCBI_dbSNP_all_mm10.vcf
+UCSC_RepeatMask_bed=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/UCSC_RepeatMask_mm10.bed
 #[optional files(these files can be created automaticcally)]
 #dir_of_individual_chr_genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common
 dir_of_individual_chr_ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/Genome_per_chrom
