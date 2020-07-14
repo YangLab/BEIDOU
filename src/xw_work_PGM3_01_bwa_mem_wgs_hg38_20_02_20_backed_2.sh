@@ -36,7 +36,7 @@ set -eo pipefail
     #/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed
     #/picb/rnomics3/xuew/Human/backup/hg38_common/${chr_n}.bed
 
-while getopts :1:2:o:n:c:t:p: ARGS  
+while getopts :1:2:o:n:c:t:p:g:f:h: ARGS  
     do  
     case $ARGS in   
         1)  
@@ -75,7 +75,7 @@ while getopts :1:2:o:n:c:t:p: ARGS
 #fq2="/picb/rnomics3/reads/2019/20191016_WGS_WLJ_NEB_Xten/20191016_0919_WLJ_WGS_01_19530_R2.fastq.gz"
 #work_path="/data/rnomics6/fuzhican/project/PE_off_target/20_02_25_miniature_run"
 #name="20191016_0919_WLJ_WGS_01_19530"
-this_software_name=xw_DMC
+this_software_name=BEIDOU
 tmp_a=aa${Patch}aa
 if [ "${tmp_a}" == "aaTrueaa" ];then
 Patch="True"
@@ -111,167 +111,11 @@ merm(){
     test -e $file1 && rm $file1 || echo "$file1" not exist!
     done
 }
-check_status(){
-    ###### Sun Mar 1 21:06:32 CST 2020 fzc
-    bin_file=$1
-    status=0
-    test -e $bin_file && { 
-        let status+=1
-        test -x $bin_file && let status+=1
-    }
-    test "$status" == "0" && {
-        echo "$bin_file is non-exist"
-        check_token="F"
-    }
-    test "$status" == "1" && {
-        echo "$bin_file is not executable!"
-        check_token="F" 
-    }
-		a=a
-}
-parse_parameters(){
-    ###### Sun Mar 1 21:06:21 CST 2020 fzc
-    tmp_a="aa${tmp_config_file}aa"
-    if [ "$tmp_a" != "aaaa" ];then
-    config_file=$tmp_config_file
-    test -e $config_file || { 
-        echo "The config file($config_file) is non-exist!" 
-        exit 1
-    } 
-    else
-    config_file=$(dirname $0)/${this_software_name}_config
-    test -e $config_file || { 
-        echo "Config_file not specified in CMD, and the default config file not find in $(dirname $0)" 
-        exit 1
-    }
-    fi
-    test -e $config_file && echo "use $config_file as config_file" 
-    source $config_file
-    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta ref_genome_path hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf dbsnp_vcf Mills_and_1000G_vcf)
-    non_specified_para_list=""
-    non_exists_para_list=""
-    for para1 in ${para_list[@]}
-    do
-    {
-        para1_value=`eval echo "$"$para1`
-        tmp_a="aa${para1_value}aa"
-        #echo $para1 "a${para1_value}a"
 
-        test "${tmp_a}" == "aaaa" && {
-            non_specified_para_list=$non_specified_para_list"\n"${para1}
-            continue
-        }
-        test -e ${para1_value} || {
-            non_exists_para_list=$non_exists_para_list"\n"${para1_value}
-            continue
-        }
-        if [[ $(echo $para1|awk -F "_" '{print $1}' ) == "dir" ]];then
-        {
-            if [ "$para1" == "dir_of_Strelka2" ] ;then
 
-            check_status ${para1_value}/configureStrelkaGermlineWorkflow.py
-            elif [ "$para1" == "dir_of_tmp" ] ;then
-            test -w ${para1_value} || {
-                echo "dir_of_tmp need exist and writeable."
-                check_token="F"
-            }
-            elif [ "$para1" == "dir_of_Scalpel" ] ;then 
-            check_status ${para1_value}/scalpel-discovery 
-            elif [ "$para1" == "dir_of_Manta" ] ;then
-            check_status ${para1_value}/configManta.py
-            elif [ "$para1" == "dir_of_picard" ] ;then
-            #check_status ${para1_value}/picard.jar 
-            test -e ${para1_value}/picard.jar ||{
-							echo "${para1_value}/picard.jar is non-exist!"
-						}
-            else
-            software_name=$(echo $para1|awk -F "_" '{print $NF}')
-            check_status ${para1_value}/$software_name
-            fi
-        }
-        fi
-    }
-    done
-    test "$non_specified_para_list" != "" &&{
-        echo "The following para(s) are not specified but necessary:$non_specified_para_list"
-        check_token="F"
-    }   
-    test "$non_exists_para_list" != "" &&{
-        echo -e "The following specified para are not exist:$non_exists_para_list"
-        check_token="F"
-    }   
-    if [ "$check_token" == "F" ];then exit 1; fi
-echo "[`date`]Finish parse_parameters"
-}
-check_optional_para(){
-    ###### Sun Mar 1 21:06:04 CST 2020 fzc
-    
-    
-    if [ ! -s ${ref_genome_path}.fai ];then
-    if [ -w `dirname $ref_genome_path` ];then
-    ${dir_of_samtools}/samtools faidx $ref_genome_path
-    fai_file=${ref_genome_path}.fai 
-    else 
-    ln -s $ref_genome_path $dir_of_tmp
-    ${dir_of_samtools}/samtools faidx $dir_of_tmp/`basename $ref_genome_path`
-    fai_file=$dir_of_tmp/`basename $ref_genome_path`.fai 
-    fi
-    else
-    fai_file=${ref_genome_path}.fai 
-    fi
-    genome_range_bed=$dir_of_tmp/Genome_range_bed_`date +%s`.bed
-    awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$Genome_range_bed
-    chrn_list=`awk '{print $1}' $fai_file`
-    para1=dir_of_individual_chr_ref_genome_path
-    para1_value=`eval echo "$"$para1`
-        tmp_a="aa${para1_value}aa"
-        test "${tmp_a}" != "aaaa" && {
-            for chrn in ${chrn_list[@]}
-            do 
-            test -e ${para1_value}/${chrn}.fa || check_token="F"
-            done
-        }||{
-            check_token="F"
-        }
-
-    test "$check_token" == "F" && {
-        
-    sep_work_path=$dir_of_tmp
-    awk '{if ($0~/^>/){chrn=substr($0,2)}print >"'$sep_work_path'/"chrn".fa"}' $ref_genome_path
-    ${dir_of_samtools}/samtools faidx ${sep_work_path}/*.fa
-    }
-
-    check_token="T"
-    para1=dir_of_individual_chr_genome_range_bed
-    para1_value=`eval echo "$"$para1`
-        tmp_a="aa${para1_value}aa"
-        test "${tmp_a}" != "aaaa" && {
-            for chrn in ${chrn_list[@]}
-            do 
-            test -e ${para1_value}/${chrn}.bed || check_token="F"
-            done
-        }||{
-            check_token="F"
-        }
-    test "$check_token" == "F" && {
-    sep_work_path=$dir_of_tmp
-    awk '{chrn=$0;print >"'$sep_work_path'/"chrn".bed"}' $genome_range_bed
-    }
-
-echo "[`date`]Finish check_optional_para"
-}
 memkdir $work_path
-parse_parameters
-check_optional_para
-
-    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta genome_range_bed ref_genome_path hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf dbsnp_vcf Mills_and_1000G_vcf dir_of_individual_chr_genome_range_bed dir_of_individual_chr_ref_genome_path)
-for para1 in ${para_list[@]}
-do
-para1_value=`eval echo "$"$para1`
-echo ${para1}"="${para1_value}
-done
+source $tmp_config_file
 echo "[`date`] Main flow begining..."
-
 if [ "${Patch}" == "False" ];then
 {
 ###### Sun Mar 15 19:49:45 CST 2020
@@ -302,36 +146,56 @@ memkdir ${work_path}/06_split_chr_bam
 # 7. gatk HaplotypeCaller 
 # 7.1 for only one bam
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O ${work_path}/${name}_07_HC.vcf
+}
+}
+fi
 
 # 8. VQSR
 # 8.1 SNP
 # VariantRecalibrator SNP
-${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 /picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/hapmap_3.3.hg38.vcf.gz --resource:omni,known=false,training=true,truth=false,prior=12.0 /picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/1000G_omni2.5.hg38.vcf.gz --resource:1000G,known=false,training=true,truth=false,prior=10.0 /picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/1000G_phase1.snps.high_confidence.hg38.vcf.gz --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 /picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/dbsnp_146.hg38.vcf.gz -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
-# ApplyVQSR SNP
-${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
+if [ "$genome_build_version" == "hg38" ];then
+{
+    ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
+    # ApplyVQSR SNP
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
 
-# 8.2 INDEL
-# VariantRecalibrator INDEL
-${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 /picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"  2>${work_path}/${name}_08_indels.log
-# ApplyVQSR INDEL
-${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
+    # 8.2 INDEL
+    # VariantRecalibrator INDEL
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 $Mills_and_1000G_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"  2>${work_path}/${name}_08_indels.log
+    # ApplyVQSR INDEL
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
+}
+elif [ "$genome_build_version" == "mm10" ];then
+{
+    #Raw vcf files from variant calling step for all chromosomes except chromosome Y were pooled together for variant quality score recalibration (VQSR) using GATK’s VariantRecalibrator under SNP mode. Training, known and true sets for building the positive model are the SNPs which segregate among the classical laboratory strains of the Mouse Genomes Project 11 (2011 release REL-1211) on all chromosomes except chromosome Y. #Nat Genet. 2016 PMID: 27376238
+    #All animals were jointly genotyped using GenotypeGVCFs, and variant quality score recalibration was performed separately for SNVs and indels using the VariantRecalibrator and ApplyRecalibration, using dbSNP for mouse v142 as the truth set of known variants. # Sci Rep. 2019 PMID: 31551502
+    ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
 
+    # ApplyVQSR SNP
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM"
+
+    # 8.2 INDEL
+    # VariantRecalibrator INDEL
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:MGP,known=true,training=true,truth=true,prior=12.0 $MGP_indel_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_indels.log
+    # ApplyVQSR INDEL
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM"
+}
+else
+echo "unsupport genome_build_version: $genome_build_version"
+fi
 # 9. SelectVariants
 # 9.1 select SNP
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_09_SNVs_VQSR.vcf -select-type SNP
 # 9.2 select INDEL
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_indels_VQSR.vcf -O ${work_path}/${name}_09_indels_VQSR.vcf -select-type INDEL
 
-}&
 
-}
-fi
+
 if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
 wait
 exit
 fi
 
-if [[ $(uname -n) != "liyang-svr5.icb.ac.cn" ]];then 
 if [ ! -e "${work_path}/${name}_SNVs_strelka2.vcf" ];then
 {
     # Strelka2 2.9.10 [SNVs @3 ok]
@@ -398,11 +262,10 @@ if [ ! -e "${work_path}/${name}_09_indels_strelka2.vcf" ];then
     zcat ${work_path}/indels_strelka2/results/variants/variants.vcf.gz > ${work_path}/${name}_09_indels_strelka2.vcf
     # output [./indels_strelka2/results/variants/genome.S1.vcf.gz]
 fi
-fi
-if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
-wait
-exit
-fi
+#if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
+#wait
+#exit
+#fi
 if [ ! -e ${work_path}/${name}_scalpel_indels.vcf ];then 
 {
     #wait

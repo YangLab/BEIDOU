@@ -1,0 +1,259 @@
+#!/usr/bin/env bash
+MYDIR=`dirname $0`
+work_path=$PWD
+MYNAME=BEIDOU
+while getopts :1:2:o:n:c:t:p:g:f:h: ARGS  
+    do  
+    case $ARGS in   
+        1)  
+            fq1=$OPTARG
+            ;;  
+        2)  
+            fq2=$OPTARG  
+            ;; 
+        o)  
+            work_path=$OPTARG
+            ;;  
+        n)  
+            name=$OPTARG
+            ;; 
+        c)
+            tmp_config_file=$OPTARG
+            ;;
+        t)
+            threads=$OPTARG
+            ;;
+        g)
+            genome_build_version=$OPTARG
+            ;;
+        f)
+            function=$OPTARG
+            ;;
+        p)
+            patch_flag=$OPTARG
+            ;;
+        h)
+            help_print
+            ;;
+        *)  
+            echo "Unknown option: $ARGS"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" 
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+      ;;
+
+    esac
+    done
+check_status(){
+    ###### Sun Mar 1 21:06:32 CST 2020 fzc
+    bin_file=$1
+    status=0
+    test -e $bin_file && { 
+        let status+=1
+        test -x $bin_file && let status+=1
+    }
+    test "$status" == "0" && {
+        echo "$bin_file is non-exist"
+        check_token="F"
+    }
+    test "$status" == "1" && {
+        echo "$bin_file is not executable!"
+        check_token="F" 
+    }
+		a=a
+}
+parse_parameters(){
+    ###### Sun Mar 1 21:06:21 CST 2020 fzc
+    tmp_a="aa${patch_flag}aa"
+    if [ "$tmp_a" == "aaaa" ];then
+    patch_flag="False"
+    fi
+    if [ "$genome_build_version" != "hg38" ] && [ "$genome_build_version" != "mm10" ];then
+    echo "unsupport genome_build_version: $genome_build_version"
+    exit 1
+    fi
+    tmp_a="aa${tmp_config_file}aa"
+    if [ "$tmp_a" != "aaaa" ];then
+    config_file=$tmp_config_file
+    test -e $config_file || { 
+        echo "The config file($config_file) is non-exist!" 
+        exit 1
+    } 
+    else
+    config_file=$(dirname $0)/${this_software_name}_config
+    test -e $config_file || { 
+        echo "Config_file not specified in CMD, and the default config file not find in $(dirname $0)" 
+        help_print
+        exit 1
+    }
+    fi
+    test -e $config_file && echo "use $config_file as config_file" 
+    source $config_file
+    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta dir_of_perl dir_of_intersectBed ref_genome_path dbsnp_vcf)
+    non_specified_para_list=""
+    non_exists_para_list=""
+    for para1 in ${para_list[@]}
+    do
+    {
+        para1_value=`eval echo "$"$para1`
+        tmp_a="aa${para1_value}aa"
+        #echo $para1 "a${para1_value}a"
+
+        test "${tmp_a}" == "aaaa" && {
+            non_specified_para_list=$non_specified_para_list"\n"${para1}
+            continue
+        }
+        test -e ${para1_value} || {
+            non_exists_para_list=$non_exists_para_list"\n"${para1_value}
+            continue
+        }
+        if [[ $(echo $para1|awk -F "_" '{print $1}' ) == "dir" ]];then
+        {
+            if [ "$para1" == "dir_of_Strelka2" ] ;then
+            check_status ${para1_value}/configureStrelkaGermlineWorkflow.py
+            elif [ "$para1" == "dir_of_Scalpel" ] ;then 
+            check_status ${para1_value}/scalpel-discovery 
+            elif [ "$para1" == "dir_of_Manta" ] ;then
+            check_status ${para1_value}/configManta.py
+            elif [ "$para1" == "dir_of_picard" ] ;then
+            #check_status ${para1_value}/picard.jar 
+            test -e ${para1_value}/picard.jar ||{
+							echo "${para1_value}/picard.jar is non-exist!"
+						}
+            else
+            software_name=$(echo $para1|awk -F "_" '{print $NF}')
+            check_status ${para1_value}/$software_name
+            fi
+        }
+        fi
+    }
+    done
+    if [ "$genome_build_version" == "hg38" ];then
+    para_list_species_specific=(hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf Mills_and_1000G_vcf)
+    elif [ "$genome_build_version" == "mm10" ];then
+    para_list_species_specific=(MGP_indel_vcf MGP_vcf)
+    fi 
+    for para1 in ${para_list_species_specific[@]}
+    do
+    {
+        para1_value=`eval echo "$"$para1`
+        tmp_a="aa${para1_value}aa"
+        #echo $para1 "a${para1_value}a"
+
+        test "${tmp_a}" == "aaaa" && {
+            non_specified_para_list=$non_specified_para_list"\n"${para1}
+            continue
+        }
+        test -e ${para1_value} || {
+            non_exists_para_list=$non_exists_para_list"\n"${para1_value}
+            continue
+        }
+    }
+    done
+    
+    test "$non_specified_para_list" != "" &&{
+        echo -e "The following para(s) are not specified but necessary:$non_specified_para_list"
+        check_token="F"
+    }   
+    test "$non_exists_para_list" != "" &&{
+        echo -e "The following specified para are not exist:$non_exists_para_list"
+        check_token="F"
+    }   
+    if [ "$check_token" == "F" ];then exit 1; fi
+echo "[`date`]Finish parse_parameters"
+}
+check_optional_para(){
+    ###### Sun Mar 1 21:06:04 CST 2020 fzc
+    tmp_need_rm_file_list=($genome_range_bed )
+    if [ ! -s ${ref_genome_path}.fai ];then
+    if [ -w `dirname $ref_genome_path` ];then
+    ${dir_of_samtools}/samtools faidx $ref_genome_path
+    fai_file=${ref_genome_path}.fai 
+    else 
+    ln -s $ref_genome_path $dir_of_tmp
+    ${dir_of_samtools}/samtools faidx $dir_of_tmp/`basename $ref_genome_path`
+    fai_file=$dir_of_tmp/`basename $ref_genome_path`.fai 
+    fi
+    else
+    fai_file=${ref_genome_path}.fai 
+    fi
+    genome_range_bed=$dir_of_tmp/Genome_range_bed_`date +%s`.bed
+    awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$genome_range_bed
+    chrn_list=`awk '{print $1}' $fai_file`
+    para1=dir_of_individual_chr_ref_genome_path
+    para1_value=`eval echo "$"$para1`
+    tmp_a="aa${para1_value}aa"
+    test "${tmp_a}" != "aaaa" && {
+        for chrn in ${chrn_list[@]}
+        do 
+        test -e ${para1_value}/${chrn}.fa || check_token="F"
+        done
+    }||{
+        check_token="F"
+    }
+    test "$check_token" == "F" && {
+    sep_work_path=$dir_of_tmp
+    tmp_need_rm_file_list=(${tmp_need_rm_file_list[@]} `awk '{if ($0~/^>/){chrn=substr($0,2)};print >"'$sep_work_path'/"chrn".fa"}$0~/^>/{print chrn".fa"}' $ref_genome_path`)
+    ${dir_of_samtools}/samtools faidx ${sep_work_path}/*.fa
+    }
+
+    check_token="T"
+    para1=dir_of_individual_chr_genome_range_bed
+    para1_value=`eval echo "$"$para1`
+        tmp_a="aa${para1_value}aa"
+        test "${tmp_a}" != "aaaa" && {
+            for chrn in ${chrn_list[@]}
+            do 
+            test -e ${para1_value}/${chrn}.bed || check_token="F"
+            done
+        }||{
+            check_token="F"
+        }
+    test "$check_token" == "F" && {
+    sep_work_path=$dir_of_tmp
+    awk '{chrn=$0;print >"'$sep_work_path'/"chrn".bed"}' $genome_range_bed
+    }
+
+
+echo "[`date`]Finish check_optional_para"
+}
+help_print(){
+test -z $genome_build_version && genome_build_version=GENOME_BUILD_VERSION
+echo "Usage: `basename $0` -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_name -c Path_of_config_file -t number_of_maximum_threads -g genome_build_version";
+
+      echo "       [-1 Path_of_fastq1]";
+      echo "       [-2 Path_of_fastq2]";
+      echo "       [-o Output_directory(default current directory)]";
+      echo "       [-n Output_name]";
+      echo "       [-c Path_of_config_file(default ${MYDIR}/${MYNAME}_config_${genome_build_version})]";
+      echo "       [-t number_of_maximum_threads]";
+      echo "       [-g genome_build_version, \"hg38\" or \"mm10\"]";
+      echo "       [-f future parameter, specific step within Read_mapping, Variants_identification, De_novo_filters and all_steps(default all_steps)]";
+      exit 1
+
+}
+one_command_work_flow(){
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads -g $genome_build_version
+    bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $tmp_config_file
+}
+SNV_calling_work_flow(){
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+}
+if [ "$#" == 0 ];then
+help_print
+fi
+parse_parameters
+check_optional_para
+tmp_a="aa${function}aa"
+if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
+one_command_work_flow
+elif [ "${tmp_a}" == "aaSNVaa" ];then
+SNV_calling_work_flow
+fi
