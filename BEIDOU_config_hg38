@@ -14,6 +14,8 @@ dir_of_intersectBed=/picb/rnomics3/xuew/software/anaconda2019/bin
 genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed
 ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.fa
 dict_of_ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.dict
+#[vcf_files_for_BaseRecalibrator]
+dbsnp_vcf_for_BaseRecalibrator=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_b151_all_hg38.vcf
 #[vcf_files_for_VariantRecalibrator]
 hapmap_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/hapmap_3.3.hg38.vcf.gz
 file_1000G_omni_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/1000G_omni2.5.hg38.vcf.gz

@@ -14,6 +14,8 @@ dir_of_tmp=~/tmp
 #[ref_genome]
 ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/mapping_tools_index/mm10_all.fa
 dict_of_ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/mapping_tools_index/mm10_all.dict
+#[vcf_files_for_BaseRecalibrator]
+dbsnp_vcf_for_BaseRecalibrator=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/NCBI_dbSNP_all_mm10.vcf
 #[vcf_files_for_VariantRecalibrator]
 dbsnp_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/NCBI_dbSNP_all_mm10.vcf #NCBI_dbSNP_b142_all_mm10.vcf.gz #Due NCBI stopped support for all non-human organisms in dbSNP, in 2017. The dbSNP file was from EVA no dbSNP release version, see the readme in the same dir for further info.  #NCBI_dbSNP_b142_all_mm10.vcf.gz
 MGP_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/MGP_SNP_indel_v5.vcf.gz 

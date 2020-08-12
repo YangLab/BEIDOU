@@ -32,6 +32,9 @@ while getopts :1:2:o:n:c:t:p:g:f:h: ARGS
         p)
             patch_flag=$OPTARG
             ;;
+        d)
+            tmp_folder=$OPTARG
+            ;;
         h)
             help_print
             ;;
@@ -66,12 +69,26 @@ check_status(){
     }
 		a=a
 }
+write_execute_para_list(){
+    ###### Mon Jul 20 09:07:15 CST 2020 fzc
+    para_name=$1
+    para_value=$2
+    echo "${para_name}=$para_value" >>$execute_para_file
+}
 parse_parameters(){
     ###### Sun Mar 1 21:06:21 CST 2020 fzc
     tmp_a="aa${patch_flag}aa"
     if [ "$tmp_a" == "aaaa" ];then
     patch_flag="False"
     fi
+    
+    if [ -z "$tmp_folder" ];then
+    tmp_folder=~/tmp
+    elif [ ! -w "$tmp_folder" ];then
+        echo "The tmp_folder($tmp_folder) is non-writable!You can execute the command \"chmod +100 $tmp_folder\" to make it writable." 
+        exit 1
+    fi
+    
     if [ "$genome_build_version" != "hg38" ] && [ "$genome_build_version" != "mm10" ];then
     echo "unsupport genome_build_version: $genome_build_version"
     exit 1
@@ -93,7 +110,7 @@ parse_parameters(){
     fi
     test -e $config_file && echo "use $config_file as config_file" 
     source $config_file
-    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta dir_of_perl dir_of_intersectBed ref_genome_path dbsnp_vcf filtering_dbSNP_vcf UCSC_RepeatMask_bed)
+    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta dir_of_perl dir_of_intersectBed ref_genome_path dbsnp_vcf_for_BaseRecalibrator dbsnp_vcf filtering_dbSNP_vcf UCSC_RepeatMask_bed)
     non_specified_para_list=""
     non_exists_para_list=""
     for para1 in ${para_list[@]}
@@ -182,8 +199,10 @@ check_optional_para(){
     fai_file=${ref_genome_path}.fai 
     fi
     genome_range_bed=$dir_of_tmp/Genome_range_bed_`date +%s`.bed
+    write_execute_para_list genome_range_bed $genome_range_bed
     awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$genome_range_bed
     chrn_list=`awk '{print $1}' $fai_file`
+    echo ${chrn_list[@]}
     para1=dir_of_individual_chr_ref_genome_path
     para1_value=`eval echo "$"$para1`
     tmp_a="aa${para1_value}aa"
@@ -196,6 +215,7 @@ check_optional_para(){
         check_token="F"
     }
     test "$check_token" == "F" && {
+    write_execute_para_list dir_of_individual_chr_ref_genome_path $dir_of_tmp
     sep_work_path=$dir_of_tmp
     tmp_need_rm_file_list=(${tmp_need_rm_file_list[@]} `awk '{if ($0~/^>/){chrn=substr($0,2)};print >"'$sep_work_path'/"chrn".fa"}$0~/^>/{print chrn".fa"}' $ref_genome_path`)
     ${dir_of_samtools}/samtools faidx ${sep_work_path}/*.fa
@@ -214,16 +234,18 @@ check_optional_para(){
             check_token="F"
         }
     test "$check_token" == "F" && {
+    write_execute_para_list dir_of_individual_chr_genome_range_bed $dir_of_tmp
     sep_work_path=$dir_of_tmp
-    awk '{chrn=$0;print >"'$sep_work_path'/"chrn".bed"}' $genome_range_bed
+    awk '{chrn=$1;print >"'$sep_work_path'/"chrn".bed"}' $genome_range_bed
     }
 
 
 echo "[`date`]Finish check_optional_para"
 }
+
 help_print(){
 test -z $genome_build_version && genome_build_version=GENOME_BUILD_VERSION
-echo "Usage: `basename $0` -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_name -c Path_of_config_file -t number_of_maximum_threads -g genome_build_version";
+echo "Usage: `basename $0` -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_name -c Path_of_config_file -t number_of_maximum_threads -g genome_build_version -d tmp_folder";
 
       echo "       [-1 Path_of_fastq1]";
       echo "       [-2 Path_of_fastq2]";
@@ -233,27 +255,40 @@ echo "Usage: `basename $0` -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n
       echo "       [-t number_of_maximum_threads]";
       echo "       [-g genome_build_version, \"hg38\" or \"mm10\"]";
       echo "       [-f future parameter, specific step within Read_mapping, Variants_identification, De_novo_filters and all_steps(default all_steps)]";
+      echo "       [-d wirtable temporary folder]";
       exit 1
 
 }
+
 one_command_work_flow(){
-    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads -g $genome_build_version
-    bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $tmp_config_file
-    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version
+    bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
 }
 SNV_calling_work_flow(){
-    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $tmp_config_file -t $threads
-    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
-    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $tmp_config_file
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $execute_para_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $execute_para_file
 }
 if [ "$#" == 0 ];then
 help_print
 fi
 parse_parameters
+dir_of_tmp=$tmp_folder/BEIDOU_`date +%s`
+test -d $dir_of_tmp ||mkdir -p $dir_of_tmp
+execute_para_file=${dir_of_tmp}/${name}_`date +%s`_BEIDOU_config_file
+cat $tmp_config_file >>$execute_para_file
 check_optional_para
+
+echo "The Parameters of $MYNAME:" 
+cat $execute_para_file
+
+
+
 tmp_a="aa${function}aa"
 if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
 one_command_work_flow
 elif [ "${tmp_a}" == "aaSNVaa" ];then
 SNV_calling_work_flow
 fi
+#rm -rf $dir_of_tmp

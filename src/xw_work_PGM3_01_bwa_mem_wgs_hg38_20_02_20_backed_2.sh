@@ -5,7 +5,7 @@ set -eo pipefail
 # mail: xuewei@picb.ac.cn
 # Created time: 
 # Last modified: Tue May 26 22:24:19 CST 2020
-
+###### Fri Jul 17 13:24:44 CST 2020
 ###############Usage############
 #bash xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20.sh -1 $fq1 -2 $fq2 -o $work_path -n $name
 #ex:
@@ -111,6 +111,7 @@ merm(){
     test -e $file1 && rm $file1 || echo "$file1" not exist!
     done
 }
+test -z "$dir_of_individual_chr_genome_range_bed" && dir_of_individual_chr_genome_range_bed=
 
 
 memkdir $work_path
@@ -133,7 +134,7 @@ merm ${work_path}/${name}_01_bwa_mem_PE.sam
 java -jar ${dir_of_picard}/picard.jar MarkDuplicates REMOVE_DUPLICATES=false I=${work_path}/${name}_02_bwa_mem_PE.bam O=${work_path}/${name}_05_2_markdup.bam M=${work_path}/${name}_05_2_markdup_metrics.txt
 
 # 6. BaseRecalibrator
-${dir_of_gatk}/gatk BaseRecalibrator -I ${work_path}/${name}_05_2_markdup.bam -R ${ref_genome_path} -O ${work_path}/${name}_06_BQSR.table --known-sites /picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_b151_all_hg38.vcf
+${dir_of_gatk}/gatk BaseRecalibrator -I ${work_path}/${name}_05_2_markdup.bam -R ${ref_genome_path} -O ${work_path}/${name}_06_BQSR.table --known-sites $dbsnp_vcf_for_BaseRecalibrator 
 ${dir_of_gatk}/gatk ApplyBQSR -I ${work_path}/${name}_05_2_markdup.bam -R ${ref_genome_path} -bqsr ${work_path}/${name}_06_BQSR.table -O ${work_path}/${name}_06_BQSR.bam
 
 {
@@ -151,6 +152,8 @@ ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EX
 }
 fi
 
+if [ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf" ] || [ ! -s "${work_path}/${name}_09_indels_VQSR.vcf" ];then
+{
 # 8. VQSR
 # 8.1 SNP
 # VariantRecalibrator SNP
@@ -170,16 +173,16 @@ elif [ "$genome_build_version" == "mm10" ];then
 {
     #Raw vcf files from variant calling step for all chromosomes except chromosome Y were pooled together for variant quality score recalibration (VQSR) using GATK’s VariantRecalibrator under SNP mode. Training, known and true sets for building the positive model are the SNPs which segregate among the classical laboratory strains of the Mouse Genomes Project 11 (2011 release REL-1211) on all chromosomes except chromosome Y. #Nat Genet. 2016 PMID: 27376238
     #All animals were jointly genotyped using GenotypeGVCFs, and variant quality score recalibration was performed separately for SNVs and indels using the VariantRecalibrator and ApplyRecalibration, using dbSNP for mouse v142 as the truth set of known variants. # Sci Rep. 2019 PMID: 31551502
-    ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
+    ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY"  2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
 
     # ApplyVQSR SNP
-    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM"
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
 
     # 8.2 INDEL
     # VariantRecalibrator INDEL
-    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:MGP,known=true,training=true,truth=true,prior=12.0 $MGP_indel_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_indels.log
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:MGP,known=true,training=true,truth=true,prior=12.0 $MGP_indel_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY"   2>${work_path}/${name}_08_indels.log ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
     # ApplyVQSR INDEL
-    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM"
+    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
 }
 else
 echo "unsupport genome_build_version: $genome_build_version"
@@ -190,7 +193,8 @@ ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_pa
 # 9.2 select INDEL
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_indels_VQSR.vcf -O ${work_path}/${name}_09_indels_VQSR.vcf -select-type INDEL
 
-
+}
+fi
 
 if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
 echo "run in $(uname -n) end at median point" 
@@ -198,7 +202,7 @@ wait
 exit
 fi
 
-if [ ! -e "${work_path}/${name}_SNVs_strelka2.vcf" ];then
+if [ ! -s "${work_path}/${name}_SNVs_strelka2.vcf" ];then
 {
     # Strelka2 2.9.10 [SNVs @3 ok]
     # https://github.com/Illumina/strelka
@@ -215,7 +219,7 @@ if [ ! -e "${work_path}/${name}_SNVs_strelka2.vcf" ];then
 fi 
 
 
-if [ ! -e "${work_path}/${name}_SNVs_lofreq.vcf" ];then
+if [ ! -s "${work_path}/${name}_SNVs_lofreq.vcf" ];then
     # lofreq 2.1.3.1 [SNVs @2 ok]
     # https://github.com/CSB5/lofreq
     # https://csb5.github.io/lofreq/
@@ -239,7 +243,7 @@ fi
 
 
 
-if [ ! -e "${work_path}/${name}_09_indels_Manta.vcf" ];then
+if [ ! -s "${work_path}/${name}_09_indels_Manta.vcf" ];then
 {
     # Manta 1.6.0 [indels @3.1 ok]
     # /picb/rnomics3/wangying/tools/manta-1.6.0.centos6_x86_64/bin/configManta.py
@@ -251,15 +255,15 @@ if [ ! -e "${work_path}/${name}_09_indels_Manta.vcf" ];then
     #20-03-15 20:59:19 60
 }
 fi
-if [ ! -e "${work_path}/${name}_09_indels_strelka2.vcf" ];then
+if [ ! -s "${work_path}/${name}_09_indels_strelka2.vcf" ];then
     # output [./indels_Manta/results/variants/candidateSmallIndels.vcf.gz]
     # Strelka2 2.9.10 [indels @3.2 ok]
     # https://github.com/Illumina/strelka
     # https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/quickStart.md
     # /picb/rnomics3/xuew/software/WGS/strelka-2.9.10.centos6_x86_64/bin/configureStrelkaGermlineWorkflow.py
     rm -rf ${work_path}/indels_strelka2
-    ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir ${work_path}/SNVs_strelka2
-    ${work_path}/SNVs_strelka2/runWorkflow.py -m local -j $threads ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz --runDir ${work_path}/indels_strelka2
+    ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --indelCandidates ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz --runDir ${work_path}/indels_strelka2
+    
     ${work_path}/indels_strelka2/runWorkflow.py -m local -j $threads
     zcat ${work_path}/indels_strelka2/results/variants/variants.vcf.gz > ${work_path}/${name}_09_indels_strelka2.vcf
     # output [./indels_strelka2/results/variants/genome.S1.vcf.gz]
@@ -268,7 +272,7 @@ fi
 #wait
 #exit
 #fi
-if [ ! -e ${work_path}/${name}_scalpel_indels.vcf ];then 
+if [ ! -s ${work_path}/${name}_scalpel_indels.vcf ];then 
 {
     #wait
     # Scalpel v0.5.4 [indels @2]
@@ -351,6 +355,7 @@ if [ ! -e ${work_path}/${name}_scalpel_indels.vcf ];then
     ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list
     java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
     ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22
+    ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
     chrn_sum_infile=`awk '$0!~/^#/{print $1}' ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l`
     chrn_sum_inlist=`cat $scalpel_indels_list|wc -l`
     if [ "$chrn_sum_inlist" != "$chrn_sum" ];then
