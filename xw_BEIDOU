@@ -2,7 +2,7 @@
 MYDIR=`dirname $0`
 work_path=$PWD
 MYNAME=BEIDOU
-while getopts :1:2:o:n:c:t:p:g:f:h: ARGS  
+while getopts :1:2:o:n:c:t:g:f:h:p: ARGS  
     do  
     case $ARGS in   
         1)  
@@ -266,9 +266,24 @@ one_command_work_flow(){
     bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
 }
 SNV_calling_work_flow(){
-    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads
-    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path}/${name} -n $name -c $execute_para_file
-    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path}/${name} -n $name -c $execute_para_file
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version -m "SNV"
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+}
+Indel_calling_work_flow(){
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version -m "Indel"
+    bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+    #bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+}
+Second_step_SNV_AND_Indel_calling_work_flow(){
+    #bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file 
+    bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+}
+First_step_SNV_AND_Indel_calling_work_flow(){
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version
+    #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file 
+    #bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
 }
 if [ "$#" == 0 ];then
 help_print
@@ -290,5 +305,9 @@ if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
 one_command_work_flow
 elif [ "${tmp_a}" == "aaSNVaa" ];then
 SNV_calling_work_flow
+elif [ "${tmp_a}" == "aaSecondaa" ];then
+Second_step_SNV_AND_Indel_calling_work_flow
+elif [ "${tmp_a}" == "aaFirstaa" ];then
+First_step_SNV_AND_Indel_calling_work_flow
 fi
 #rm -rf $dir_of_tmp
