@@ -251,9 +251,7 @@ step8_SNVs_strelka2(){
         # /picb/rnomics3/xuew/software/WGS/strelka-2.9.10.centos6_x86_64/bin/configureStrelkaGermlineWorkflow.py
 
             #20:47
-        ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir .gz
-
-
+        ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir ${work_path}/SNVs_strelka2
         ${work_path}/SNVs_strelka2/runWorkflow.py -m local -j $threads
         # output [./SNVs_strelka2/results/variants/variants.vcf.gz]
         #zcat ${work_path}/SNVs_strelka2/results/variants/variants.vcf.gz > ${work_path}/${name}_SNVs_strelka2.vcf  
