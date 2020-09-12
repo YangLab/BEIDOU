@@ -46,43 +46,45 @@ ln -sf ${work_path}/${name}_09_SNVs_VQSR.vcf.gz ${work_path}/${name}_10_SNVs_gat
 ln -sf ${work_path}/${name}_SNVs_lofreq.vcf ${work_path}/${name}_10_SNVs_lofreq_total.vcf
 ln -sf ${work_path}/${name}_SNVs_strelka2.vcf.gz ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz
 
+tabix -fp vcf ${work_path}/${name}_10_SNVs_gatk_total.vcf.gz
+tabix -fp vcf ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz 
 memkdir ${work_path}/Novel_SNVs_d10_af10 #Novel_SNVs_d10_af10
 # 11. PASS
-# 11.1 gatk
+# 11.1 gatk 
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_SNVs_gatk_total.vcf.gz -O ${work_path}/${name}_11_SNVs_gatk_PASS.vcf.gz --exclude-filtered true -select-type SNP
-awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$NF}' <(bcftools view -H ${work_path}/${name}_11_SNVs_gatk_PASS.vcf.gz) |awk '{split($6,x,":"); print $0"\t"x[2]"\t"x[3]}' |cut -f 1-2,4-5,7-8 |sed 's/,/\t/g' |awk '{if($7>0)print$1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$6/$7}' > ${work_path}/${name}_11_SNVs_gatk_PASS.txt
+awk 'BEGIN{OFS="\t"}{if($7=="PASS"&&$5!~",")print $1,$2,$3,$4,$5,$NF}' <(bcftools view -H ${work_path}/${name}_11_SNVs_gatk_PASS.vcf.gz) |awk 'BEGIN{OFS="\t"}{split($6,x,":"); print $0,x[2],x[3]}' |cut -f 1-2,4-5,7-8 |sed 's/,/\t/g' |awk 'BEGIN{OFS="\t"}{if($7>0)print $1,$2,$3,$4,$5,$6,$7,$6/$7}' > ${work_path}/${name}_11_SNVs_gatk_PASS.txt
 # 11.2 lofreq
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_SNVs_lofreq_total.vcf -O ${work_path}/${name}_11_SNVs_lofreq_PASS.vcf --exclude-filtered true -select-type SNP
-awk '{if($7=="PASS")print $0}' ${work_path}/${name}_11_SNVs_lofreq_PASS.vcf |awk '{split($8,x,";"); print $1"\t"$2"\t"$4"\t"$5"\t"x[1]"\t"x[2]"\t"x[3]}' |sed 's/AF=//g' |sed 's/DP=//g' |sed 's/DP4=//g' |awk '{split($7,x,","); print $1"\t"$2"\t"$3"\t"$4"\t"x[1]+x[2]"\t"x[3]+x[4]"\t"$6"\t"$5}' > ${work_path}/${name}_11_SNVs_lofreq_PASS.txt
+awk '$7=="PASS"' ${work_path}/${name}_11_SNVs_lofreq_PASS.vcf |awk 'BEGIN{OFS="\t"}{split($8,x,";"); print $1,$2,$4,$5,x[1],x[2],x[3]}' |sed 's/AF=//g' |sed 's/DP=//g' |sed 's/DP4=//g' |awk 'BEGIN{OFS="\t"}{split($7,x,","); print $1,$2,$3,$4,x[1]+x[2],x[3]+x[4],$6,$5}' > ${work_path}/${name}_11_SNVs_lofreq_PASS.txt
 # 11.3 Strelka2
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz -O ${work_path}/${name}_11_SNVs_strelka2_PASS.vcf.gz --exclude-filtered true -select-type SNP
-awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' <(bcftools view -H ${work_path}/${name}_11_SNVs_strelka2_PASS.vcf.gz) |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]"\t"x[5]}' |sed 's/,/\t/g' |awk '{print $0"\t"$6/$7}' > ${work_path}/${name}_11_SNVs_strelka2_PASS.txt
+awk 'BEGIN{OFS="\t"}{if($7=="PASS"&&$5!~",")print $1,$2,$4,$5,$NF}' <(bcftools view -H ${work_path}/${name}_11_SNVs_strelka2_PASS.vcf.gz ) |awk 'BEGIN{OFS="\t"}{split($5,x,":"); print $1,$2,$3,$4,x[2],x[5]}' |sed 's/,/\t/g' |awk 'BEGIN{OFS="\t"}{print $0,$6/$7}' > ${work_path}/${name}_11_SNVs_strelka2_PASS.txt
 
 # 12. depth ≥ 10/20 Allele Frequency ≥ 0.1
 # 12.1 gatk d10_af10/d10_af10
-awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/${name}_11_SNVs_gatk_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_gatk_d10_af10.txt
+awk 'BEGIN{OFS="\t"}{if($7>=10 && $8>=0.1)print $1,$2-1,$2,$1":"$2,$0}' ${work_path}/${name}_11_SNVs_gatk_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_gatk_d10_af10.txt
 # 12.2 lofreq d10_af10/d10_af10
-awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/${name}_11_SNVs_lofreq_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_lofreq_d10_af10.txt
+awk 'BEGIN{OFS="\t"}{if($7>=10 && $8>=0.1)print $1,$2-1,$2,$1":"$2,$0}' ${work_path}/${name}_11_SNVs_lofreq_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_lofreq_d10_af10.txt
 # 12.3 Strelka2 d10_af10/d10_af10
-awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/${name}_11_SNVs_strelka2_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_strelka2_d10_af10.txt
+awk 'BEGIN{OFS="\t"}{if($7>=10 && $8>=0.1)print $1,$2-1,$2,$1":"$2,$0}' ${work_path}/${name}_11_SNVs_strelka2_PASS.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_strelka2_d10_af10.txt
 
 # 13. remove dbSNP
 # dbSNP151 all
 {
 # gatk_d10_af10
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10.txt
+${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H 2>/dev/null|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10.txt
 cut -f 1 ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10.txt |sort -u > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_gatk_d10_af10.txt ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10.sites 4 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_gatk_d10_af10_rmdbSNP151.txt
 }&
 {
 # lofreq_d10_af10
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_lofreq_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10.txt
+${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H 2>/dev/null |awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_lofreq_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10.txt
 cut -f 1 ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10.txt |sort -u > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_lofreq_d10_af10.txt ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10.sites 4 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_lofreq_d10_af10_rmdbSNP151.txt
 }&
 {
 # strelka2_d10_af10
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_strelka2_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10.txt
+${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H 2>/dev/null|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_strelka2_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10.txt
 cut -f 1 ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10.txt |sort -u > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_SNVs_d10_af10/${name}_12_SNVs_strelka2_d10_af10.txt ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10.sites 4 > ${work_path}/Novel_SNVs_d10_af10/${name}_13_all_strelka2_d10_af10_rmdbSNP151.txt
 }&

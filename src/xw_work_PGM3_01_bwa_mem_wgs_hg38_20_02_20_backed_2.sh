@@ -198,10 +198,12 @@ step7_HaplotypeCaller(){
     if [ "$genome_build_version" == "hg38" ];then
     {
         echo "##Time `date +"%R %d %m"` VariantRecalibrator begining"
+        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ([ "${Patch}" != "True" ]) ;then
         ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
         # ApplyVQSR SNP
         echo "##Time `date +"%R %d %m"` ApplyVQSR begining"
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
+        fi
         if [ "$mutation_type" != "SNV" ];then
         # 8.2 INDEL
         # VariantRecalibrator INDEL
@@ -214,12 +216,14 @@ step7_HaplotypeCaller(){
     }
     elif [ "$genome_build_version" == "mm10" ];then
     {
+        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then
         #Raw vcf files from variant calling step for all chromosomes except chromosome Y were pooled together for variant quality score recalibration (VQSR) using GATK’s VariantRecalibrator under SNP mode. Training, known and true sets for building the positive model are the SNPs which segregate among the classical laboratory strains of the Mouse Genomes Project 11 (2011 release REL-1211) on all chromosomes except chromosome Y. #Nat Genet. 2016 PMID: 27376238
         #All animals were jointly genotyped using GenotypeGVCFs, and variant quality score recalibration was performed separately for SNVs and indels using the VariantRecalibrator and ApplyRecalibration, using dbSNP for mouse v142 as the truth set of known variants. # Sci Rep. 2019 PMID: 31551502
         ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
 
         # ApplyVQSR SNP
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM" added backed ###### Mon Aug 17 09:20:44 CST 2020  added backed -L "chrM"
+        fi
         if [ "$mutation_type" != "SNV" ];then
         # 8.2 INDEL
         # VariantRecalibrator INDEL
@@ -233,11 +237,15 @@ step7_HaplotypeCaller(){
     fi
     # 9. SelectVariants
     # 9.1 select SNP
+    if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then
     ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_09_SNVs_VQSR.vcf.gz -select-type SNP
     test -s ${work_path}/${name}_09_SNVs_VQSR.vcf.gz && merm ${work_path}/${name}_08_snps.recal ${work_path}/${name}_08_snps_VQSR.vcf
+    fi
+    if [ "$mutation_type" != "SNV" ];then
     # 9.2 select INDEL
     ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_indels_VQSR.vcf -O ${work_path}/${name}_09_indels_VQSR.vcf.gz -select-type INDEL
-    test -s ${work_path}/${name}_09_indels_VQSR.vcf.gz && merm ${work_path}/${name}_08_indels.recal
+    test -s ${work_path}/${name}_09_indels_VQSR.vcf.gz && merm ${work_path}/${name}_08_indels.recal ${work_path}/${name}_08_indels_VQSR.vcf
+    fi
 
     }
     fi
