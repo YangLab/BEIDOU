@@ -202,7 +202,7 @@ check_optional_para(){
     write_execute_para_list genome_range_bed $genome_range_bed
     awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$genome_range_bed
     chrn_list=`awk '{print $1}' $fai_file`
-    echo ${chrn_list[@]}
+    #echo ${chrn_list[@]}
     para1=dir_of_individual_chr_ref_genome_path
     para1_value=`eval echo "$"$para1`
     tmp_a="aa${para1_value}aa"
