@@ -446,9 +446,6 @@ skipping_steps(){
         perl /picb/rnomics3/xuew/software/SNV_annovar/convert2annovar.pl -format vcf4 10_indels_gatk_d10_Q20.vcf > 11_indels_gatk_d10_Q20.avinput
         perl /picb/rnomics3/xuew/software/SNV_annovar/annotate_variation.pl -filter -buildver hg19 -dbtype 1000g2015aug_all -maf 0.001 11_indels_gatk_d10_Q20.avinput /picb/rnomics3/xuew/software/SNV_annovar/hg19/ --outfile 12_indels_gatk_d10_Q20_snps
         perl /picb/rnomics3/xuew/software/SNV_annovar/table_annovar.pl 10_indels_gatk_d10_Q20.vcf /picb/rnomics3/xuew/software/SNV_annovar/hg19/ -buildver hg19 -out 13_indels_gatk_d10_Q20 -remove -protocol refGene,genomicSuperDups,cytoBand,exac03,avsnp150,dbnsfp30a,clinvar_20180603,esp6500siv2_all -operation g,r,r,f,f,f,f,f -nastring . -vcfinput
-
-
-
         # vcf
         # /data/rnomics6/xuew/Human/BE_WangLiJie/SBE_genome_20191023/backup/vcf151/
         ln -s /picb/rnomics4/wangying/DNA_Cas9_ChenJia/Cpf1_paper/ClinVar_Database/Download/dbSNP/GRCh37_b151_p13/common_all_20180423_chr.vcf ${work_path}/${name}_01_GRCh37_b151_p13_common.vcf
