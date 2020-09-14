@@ -67,7 +67,7 @@ awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path
 # dbSNP151 all
 {
 # gatk_d10_af10
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view NCBI_dbSNP_b151_all_hg38.vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt
+${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt
 cut -f 1 ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt |sort -u > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites 4 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10_rmdbSNP151.txt
 }&
