@@ -85,10 +85,11 @@ Patch="True"
 else
 Patch="False"
 fi
-if [ "${mutation_type}" == "aaaa" ];then
+if [ "aa${mutation_type}aa" == "aaaa" ];then
 mutation_type="all"
 fi
 
+echo "mutation_type:$mutation_type"
 ref_genome=$genome_build_version
 ##To do
 ##modification note
