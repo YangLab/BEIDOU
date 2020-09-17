@@ -305,9 +305,13 @@ if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
 one_command_work_flow
 elif [ "${tmp_a}" == "aaSNVaa" ];then
 SNV_calling_work_flow
+elif [ "${tmp_a}" == "aaIndelaa" ];then
+Indel_calling_work_flow
 elif [ "${tmp_a}" == "aaSecondaa" ];then
 Second_step_SNV_AND_Indel_calling_work_flow
 elif [ "${tmp_a}" == "aaFirstaa" ];then
 First_step_SNV_AND_Indel_calling_work_flow
+else
+echo "Unsupport function:${function}"
 fi
 #rm -rf $dir_of_tmp

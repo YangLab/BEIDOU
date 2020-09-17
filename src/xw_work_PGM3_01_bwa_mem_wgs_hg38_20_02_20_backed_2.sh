@@ -293,7 +293,7 @@ if [ ! -s "${work_path}/${name}_09_indels_Manta.vcf.gz" ] || [ "${Patch}" != "Tr
     ${dir_of_Manta}/configManta.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir ${work_path}/indels_Manta
     ${work_path}/indels_Manta/runWorkflow.py -j $threads
     #zcat ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz > ${work_path}/${name}_09_indels_Manta.vcf
-    mv ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz ${work_path}/${name}_09_indels_Manta.vcf.gz
+    cp ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz ${work_path}/${name}_09_indels_Manta.vcf.gz
     #20-03-15 20:59:19 60
 }
 fi
@@ -316,14 +316,14 @@ step11_indels_strelka2(){
     fi
 }
 step12_1_split_bam(){
-    if [ ! -s "${work_path}/${name}_scalpel_indels.vcf" ] || [ "${Patch}" != "True" ];then
+    if [ ! -s "${work_path}/${name}_10_indels_scalpel_total.vcf" ] || [ "${Patch}" != "True" ];then
     memkdir ${work_path}/06_split_chr_bam
     ${dir_of_bamtools}/bamtools split -in ${work_path}/${name}_06_BQSR.bam -stub ${work_path}/06_split_chr_bam/${name}_06_BQSR -reference 
     touch ${work_path}/06_split_chr_bam/split_bam_ok 
     fi
 }
 step12_scalpel_indels(){
-    if [ ! -s ${work_path}/${name}_scalpel_indels.vcf ]|| [ "${Patch}" != "True" ];then 
+    if [ ! -s ${work_path}/${name}_10_indels_scalpel_total.vcf ]|| [ "${Patch}" != "True" ];then 
     {
         #wait
         # Scalpel v0.5.4 [indels @2]
@@ -404,21 +404,21 @@ step12_scalpel_indels(){
         done
         wait
         ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list
-        java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
+        java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_10_indels_scalpel_total.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
         ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22
         ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
-        chrn_sum_infile=`awk '$0!~/^#/{print $1}' ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l`
+        chrn_sum_infile=`awk '$0!~/^#/{print $1}' ${work_path}/${name}_10_indels_scalpel_total.vcf|sort|uniq|wc -l`
         chrn_sum_inlist=`cat $scalpel_indels_list|wc -l`
         if [ "$chrn_sum_inlist" != "$chrn_sum" ];then
         echo -e 'ERROR! ! ! ! ! #'" \n $scalpel_indels_list do not have correct chromosome number; please check it! "
-        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error 
+        mv ${work_path}/${name}_10_indels_scalpel_total.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf_chrn_error 
         fi
 
         if [ "$chrn_sum" != "$chrn_sum_infile" ] ;then
-        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_scalpel_indels.vcf do not have correct chromosome number; please check it! \n awk '\$0! ~/^#/{print \$1}' ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l"
-        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error 
+        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_10_indels_scalpel_total.vcf do not have correct chromosome number; please check it! \n awk '\$0! ~/^#/{print \$1}' ${work_path}/${name}_10_indels_scalpel_total.vcf|sort|uniq|wc -l"
+        mv ${work_path}/${name}_10_indels_scalpel_total.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf_chrn_error 
         fi
-        test -s ${work_path}/${name}_scalpel_indels.vcf && rm -r ${work_path}/06_split_chr_bam
+        test -s ${work_path}/${name}_10_indels_scalpel_total.vcf && rm -r ${work_path}/06_split_chr_bam
         }
 
     fi

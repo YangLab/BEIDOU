@@ -45,6 +45,12 @@ memkdir ${work_path}/Novel_Indels_d10_af10
 ln -sf ${work_path}/${name}_09_indels_VQSR.vcf.gz ${work_path}/${name}_10_indels_gatk_total.vcf.gz
 ln -sf ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf
 ln -sf ${work_path}/${name}_09_indels_strelka2.vcf.gz  ${work_path}/${name}_10_indels_strelka2_total.vcf.gz
+
+#%s/_scalpel_indels.vcf/_10_indels_scalpel_total.vcf/g
+tabix -fp vcf ${work_path}/${name}_10_indels_gatk_total.vcf.gz
+tabix -fp vcf ${work_path}/${name}_10_indels_scalpel_total.vcf 
+tabix -fp vcf ${work_path}/${name}_10_indels_strelka2_total.vcf.gz 
+
 # 11. PASS
 # 11.1 gatk
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_gatk_total.vcf.gz -O ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_gatk_PASS.vcf.gz --exclude-filtered true -select-type INDEL
