@@ -43,7 +43,7 @@ select_v_ID_pl=${MYDIR}/select_v_ID.pl
 memkdir ${work_path}/Novel_Indels_d10_af10
 # 10. vcfutils.pl varFilter
 ln -sf ${work_path}/${name}_09_indels_VQSR.vcf.gz ${work_path}/${name}_10_indels_gatk_total.vcf.gz
-ln -sf ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf
+test -s ${work_path}/${name}_10_indels_scalpel_total.vcf ||ln -sf ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf
 ln -sf ${work_path}/${name}_09_indels_strelka2.vcf.gz  ${work_path}/${name}_10_indels_strelka2_total.vcf.gz
 
 #%s/_scalpel_indels.vcf/_10_indels_scalpel_total.vcf/g
@@ -73,21 +73,27 @@ awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path
 # dbSNP151 all
 {
 # gatk_d10_af10
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt
-cut -f 1 ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt |sort -u > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites
-${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites 4 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10_rmdbSNP151.txt
+test -s ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt && {
+    ${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt
+    cut -f 1 ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.txt |sort -u > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites
+    ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10.sites 4 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_gatk_d10_af10_rmdbSNP151.txt
+}
 }&
 {
 # scalpel_d10_af10
+test -s ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_scalpel_d10_af10.txt && {
 ${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_scalpel_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_scalpel_d10_af10.txt
 cut -f 1 ${work_path}/Novel_Indels_d10_af10/${name}_13_all_scalpel_d10_af10.txt |sort -u > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_scalpel_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_scalpel_d10_af10.txt ${work_path}/Novel_Indels_d10_af10/${name}_13_all_scalpel_d10_af10.sites 4 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_scalpel_d10_af10_rmdbSNP151.txt
+}
 }&
 {
 # strelka2_d10_af10
+test -s ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_strelka2_d10_af10.txt && {
 ${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_strelka2_d10_af10.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_strelka2_d10_af10.txt
 cut -f 1 ${work_path}/Novel_Indels_d10_af10/${name}_13_all_strelka2_d10_af10.txt |sort -u > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_strelka2_d10_af10.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_strelka2_d10_af10.txt ${work_path}/Novel_Indels_d10_af10/${name}_13_all_strelka2_d10_af10.sites 4 > ${work_path}/Novel_Indels_d10_af10/${name}_13_all_strelka2_d10_af10_rmdbSNP151.txt
+}
 }&
 wait
 #cat 13*_d10_af10_rmdbSNP151.txt |cut -f 4 |sort |uniq -c |awk '{print $2"\t"$1}' |awk '{if($2==3)print $1}' |wc -l

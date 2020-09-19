@@ -150,6 +150,35 @@ step01_06_construct_bam(){
     test -s ${work_path}/${name}_06_BQSR.bam && merm ${work_path}/${name}_05_2_markdup.bam
 
 }
+cpu_info(){
+    ###### Sat Sep 19 17:10:37 CST 2020
+    total_threads=`grep 'processor' /proc/cpuinfo | sort -u | wc -l`
+    run_threads=`cat /proc/loadavg|cut -f1 -d" "`
+    idle_threads=`echo $total_threads-$run_threads|bc`
+    #echo `echo $run_threads/$total_threads|bc`
+    echo $idle_threads
+}
+threads_ctrl_for_step7_HaplotypeCaller(){
+    ###### Sat Sep 19 17:19:26 CST 2020
+    count_hap=$(echo "scale=0;$(cpu_info)/3"|bc)
+    if [[ $count_hap -gt 10 ]];then
+    count_threads_ctrl_for_step7_HaplotypeCaller=10
+    else
+    count_threads_ctrl_for_step7_HaplotypeCaller=`echo "scale=0;$count_hap"|bc`
+    fi
+    echo $count_threads_ctrl_for_step7_HaplotypeCaller
+}
+threads_ctrl_for_step12_scalpel_indels(){
+    ###### Sat Sep 19 17:19:26 CST 2020
+    count_idles=$(echo "scale=0;$(cpu_info)/1"|bc)
+    if [[ $count_idles -gt $threads ]];then
+    count_threads_ctrl_for_step12_scalpel_indels=$threads
+    else
+    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles"|bc`
+    fi
+    echo $count_threads_ctrl_for_step12_scalpel_indels
+}
+
 step7_HaplotypeCaller(){
     # 7. gatk HaplotypeCaller 
     # 7.1 for only one bam
@@ -176,7 +205,7 @@ step7_HaplotypeCaller(){
     hap_out_split_chr=${work_path}/hap_split_chr/${name}_${chrn}_07_HC.vcf.gz
     #echo ${dir_of_gatk}/gatk --java-options \"-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true\" HaplotypeCaller -I $hap_in_bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn 
     ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn &
-    metc 5 
+    metc `threads_ctrl_for_step7_HaplotypeCaller`
     done
     wait
     ls ${work_path}/hap_split_chr/${name}_*_07_HC.vcf.gz >$input_variant_files
@@ -316,14 +345,14 @@ step11_indels_strelka2(){
     fi
 }
 step12_1_split_bam(){
-    if [ ! -s "${work_path}/${name}_10_indels_scalpel_total.vcf" ] || [ "${Patch}" != "True" ];then
+    if [ ! -s "${work_path}/${name}_scalpel_indels.vcf" ] || [ "${Patch}" != "True" ];then
     memkdir ${work_path}/06_split_chr_bam
     ${dir_of_bamtools}/bamtools split -in ${work_path}/${name}_06_BQSR.bam -stub ${work_path}/06_split_chr_bam/${name}_06_BQSR -reference 
     touch ${work_path}/06_split_chr_bam/split_bam_ok 
     fi
 }
 step12_scalpel_indels(){
-    if [ ! -s ${work_path}/${name}_10_indels_scalpel_total.vcf ]|| [ "${Patch}" != "True" ];then 
+    if [ ! -s ${work_path}/${name}_scalpel_indels.vcf ]|| [ "${Patch}" != "True" ];then 
     {
         #wait
         # Scalpel v0.5.4 [indels @2]
@@ -400,25 +429,26 @@ step12_scalpel_indels(){
             ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs ${threads_1} --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n}
             echo $output_file >>$scalpel_indels_list 
         }&
-        metc ${threads_n}
+        metc `threads_ctrl_for_step12_scalpel_indels`
         done
         wait
         ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list
-        java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_10_indels_scalpel_total.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
+        java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
         ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22
         ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
-        chrn_sum_infile=`awk '$0!~/^#/{print $1}' ${work_path}/${name}_10_indels_scalpel_total.vcf|sort|uniq|wc -l`
+        chrn_sum_infile=`awk '$0!~/^#/{print $1}' ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l`
         chrn_sum_inlist=`cat $scalpel_indels_list|wc -l`
         if [ "$chrn_sum_inlist" != "$chrn_sum" ];then
         echo -e 'ERROR! ! ! ! ! #'" \n $scalpel_indels_list do not have correct chromosome number; please check it! "
-        mv ${work_path}/${name}_10_indels_scalpel_total.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf_chrn_error 
+        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error 
         fi
 
         if [ "$chrn_sum" != "$chrn_sum_infile" ] ;then
-        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_10_indels_scalpel_total.vcf do not have correct chromosome number; please check it! \n awk '\$0! ~/^#/{print \$1}' ${work_path}/${name}_10_indels_scalpel_total.vcf|sort|uniq|wc -l"
-        mv ${work_path}/${name}_10_indels_scalpel_total.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf_chrn_error 
+        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_scalpel_indels.vcf do not have correct chromosome number; please check it! \n awk '\$0! ~/^#/{print \$1}' ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l"
+        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error 
         fi
-        test -s ${work_path}/${name}_10_indels_scalpel_total.vcf && rm -r ${work_path}/06_split_chr_bam
+        #_scalpel_indels
+        test -s ${work_path}/${name}_scalpel_indels.vcf && rm -r ${work_path}/06_split_chr_bam
         }
 
     fi
@@ -479,8 +509,9 @@ fi
 if [ "$mutation_type" != "SNV" ];then
 step10_indels_Manta
 step11_indels_strelka2
-
+if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
 step12_scalpel_indels
+fi
 fi
 
 #if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
@@ -489,6 +520,7 @@ fi
 #fi
 
 wait
+touch ${work_path}/${name}_Main_stream_ok
 ###### Fri Feb 21 10:02:08 CST 2020 xw recommended end, added by fzc
 
 
