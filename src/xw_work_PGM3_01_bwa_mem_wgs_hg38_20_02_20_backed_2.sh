@@ -160,7 +160,7 @@ cpu_info(){
 }
 threads_ctrl_for_step7_HaplotypeCaller(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_hap=$(echo "scale=0;$(cpu_info)/3"|bc)
+    count_hap=$(echo "scale=0;$(cpu_info-10)/3"|bc)
     if [[ $count_hap -gt 10 ]];then
     count_threads_ctrl_for_step7_HaplotypeCaller=10
     else
@@ -345,7 +345,8 @@ step11_indels_strelka2(){
     fi
 }
 step12_1_split_bam(){
-    if [ ! -s "${work_path}/${name}_scalpel_indels.vcf" ] || [ "${Patch}" != "True" ];then
+    if [ ! -s "${work_path}/06_split_chr_bam/split_bam_ok" ] || [ "${Patch}" != "True" ];then
+    #if [ ! -s "${work_path}/${name}_scalpel_indels.vcf" ] || [ "${Patch}" != "True" ];then
     memkdir ${work_path}/06_split_chr_bam
     ${dir_of_bamtools}/bamtools split -in ${work_path}/${name}_06_BQSR.bam -stub ${work_path}/06_split_chr_bam/${name}_06_BQSR -reference 
     touch ${work_path}/06_split_chr_bam/split_bam_ok 
