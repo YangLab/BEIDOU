@@ -59,7 +59,7 @@ awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$NF}' <(bcftool
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_scalpel_total.vcf -O ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_scalpel_PASS.vcf --exclude-filtered true -select-type INDEL
 awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_scalpel_PASS.vcf |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]}' |sed 's/,/\t/g' |awk '{print $0"\t"$5+$6"\t"$6/($5+$6)}' > ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_scalpel_PASS.txt
 # 11.3 Strelka2
-${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_strelka2_total.vcf.gz -O ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_strelka2_PASS.vcf.fz --exclude-filtered true -select-type INDEL
+${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_strelka2_total.vcf.gz -O ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_strelka2_PASS.vcf.gz --exclude-filtered true -select-type INDEL
 awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' <(bcftools view -H ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_strelka2_PASS.vcf.gz) |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]}' |sed 's/,/\t/g' |awk '{print $0"\t"$5+$6"\t"$6/($5+$6)}' > ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_strelka2_PASS.txt
 
 # 12. depth ≥ 10/20 Allele Frequency ≥ 0.1
