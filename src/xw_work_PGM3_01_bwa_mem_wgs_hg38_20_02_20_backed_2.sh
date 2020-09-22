@@ -160,7 +160,7 @@ cpu_info(){
 }
 threads_ctrl_for_step7_HaplotypeCaller(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_hap=$(echo "scale=0;$(cpu_info-10)/3"|bc)
+    count_hap=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
     if [[ $count_hap -gt 10 ]];then
     count_threads_ctrl_for_step7_HaplotypeCaller=10
     else
@@ -170,7 +170,7 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }
 threads_ctrl_for_step12_scalpel_indels(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_idles=$(echo "scale=0;$(cpu_info-10)/1"|bc)
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
     if [[ $count_idles -gt $threads ]];then
     count_threads_ctrl_for_step12_scalpel_indels=$threads
     else
@@ -204,10 +204,11 @@ step7_HaplotypeCaller(){
     do
     hap_out_split_chr=${work_path}/hap_split_chr/${name}_${chrn}_07_HC.vcf.gz
     #echo ${dir_of_gatk}/gatk --java-options \"-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true\" HaplotypeCaller -I $hap_in_bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn 
-    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn &
-    metc `threads_ctrl_for_step7_HaplotypeCaller`
+    echo `threads_ctrl_for_step7_HaplotypeCaller` >${work_path}/hap_split_chr/job_batch_size
+    sem -j ${work_path}/hap_split_chr/job_batch_size --id my_id_1 -q ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn 
+    #metc `threads_ctrl_for_step7_HaplotypeCaller`
     done
-    wait
+    sem --wait --id my_id_1  2>/dev/null
     ls ${work_path}/hap_split_chr/${name}_*_07_HC.vcf.gz >$input_variant_files
     java -jar ${dir_of_picard}/picard.jar MergeVcfs \
           I=$input_variant_files \
@@ -345,7 +346,7 @@ step11_indels_strelka2(){
     fi
 }
 step12_1_split_bam(){
-    if ( [ ! -s ${work_path}/${name}_scalpel_indels.vcf ] && [ ! -s "${work_path}/06_split_chr_bam/split_bam_ok" ] ) || [ "${Patch}" != "True" ];then
+    if ( [ ! -s ${work_path}/${name}_scalpel_indels.vcf ] && [ ! -e "${work_path}/06_split_chr_bam/split_bam_ok" ] ) || [ "${Patch}" != "True" ];then
     #if [ ! -s "${work_path}/${name}_scalpel_indels.vcf" ] || [ "${Patch}" != "True" ];then
     memkdir ${work_path}/06_split_chr_bam
     ${dir_of_bamtools}/bamtools split -in ${work_path}/${name}_06_BQSR.bam -stub ${work_path}/06_split_chr_bam/${name}_06_BQSR -reference 
@@ -412,7 +413,7 @@ step12_scalpel_indels(){
         threads_n=1
         threads_1=$thread
         fi
-        for bam_file in `ls -Sr ${work_path}/06_split_chr_bam/*.bam` ;do ###### Tue Feb 25 22:26:59 CST 2020 added by fzc;
+        for bam_file in `ls -S ${work_path}/06_split_chr_bam/*.bam` ;do ###### Tue Feb 25 22:26:59 CST 2020 added by fzc;
         #for bam_file in `ls -S ${work_path}/06_split_chr_bam/*.bam|head -n10` ;do ###### Tue Feb 25 22:26:59 CST 2020 added by fzc;
             #06_BQSR.REF_chr10.bam
             chr_n=$(echo $bam_file|awk -F ".REF_" '{print $2}'|cut -d. -f1)
@@ -427,12 +428,11 @@ step12_scalpel_indels(){
                 }
         {
             ${dir_of_samtools}/samtools index $bam_file
-            ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs ${threads_1} --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n}
-            echo $output_file >>$scalpel_indels_list 
-        }&
-        metc `threads_ctrl_for_step12_scalpel_indels`
+            echo `threads_ctrl_for_step12_scalpel_indels` >${work_path}/06_split_chr_bam/job_batch_size
+            sem -j ${work_path}/06_split_chr_bam/job_batch_size --id my_id_2 ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs 3 --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n} "; echo $output_file >>$scalpel_indels_list "
+        }
         done
-        wait
+        sem --wait --id my_id_2 2>/dev/null 
         ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list
         java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}
         ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22
@@ -498,11 +498,11 @@ step12_1_split_bam &
 fi
 step7_HaplotypeCaller &
 
-if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
-echo "run in $(uname -n) end at median point" 
-wait
-exit
-fi
+#if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
+#echo "run in $(uname -n) end at median point" 
+#wait
+#exit
+#fi
 if [ "$mutation_type" != "Indel" ];then
 step8_SNVs_strelka2
 step9_SNVs_lofreq
@@ -510,9 +510,9 @@ fi
 if [ "$mutation_type" != "SNV" ];then
 step10_indels_Manta
 step11_indels_strelka2
-if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
+#if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
 step12_scalpel_indels
-fi
+#fi
 fi
 
 #if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
