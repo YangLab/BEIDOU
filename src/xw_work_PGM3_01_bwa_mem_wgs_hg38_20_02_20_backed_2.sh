@@ -510,15 +510,15 @@ fi
 if [ "$mutation_type" != "SNV" ];then
 step10_indels_Manta
 step11_indels_strelka2
-#if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
+if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
 step12_scalpel_indels
-#fi
+fi
 fi
 
-#if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
-#wait
-#exit
-#fi
+if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then 
+wait
+exit
+fi
 
 wait
 touch ${work_path}/${name}_Main_stream_ok
