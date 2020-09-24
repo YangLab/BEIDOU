@@ -160,21 +160,21 @@ cpu_info(){
 }
 threads_ctrl_for_step7_HaplotypeCaller(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_hap=$(echo "scale=0;$(cpu_info)-10/3"|bc)
+    count_hap=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
     if [[ $count_hap -gt 10 ]];then
     count_threads_ctrl_for_step7_HaplotypeCaller=10
     else
-    count_threads_ctrl_for_step7_HaplotypeCaller=`echo "scale=0;$count_hap"|bc`
+    count_threads_ctrl_for_step7_HaplotypeCaller=`echo "scale=0;$count_hap/1"|bc`
     fi
     echo $count_threads_ctrl_for_step7_HaplotypeCaller
 }
 threads_ctrl_for_step12_scalpel_indels(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_idles=$(echo "scale=0;$(cpu_info)-10/1"|bc)
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/1"|bc)
     if [[ $count_idles -gt $threads ]];then
     count_threads_ctrl_for_step12_scalpel_indels=$threads
     else
-    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles"|bc`
+    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/1"|bc`
     fi
     echo $count_threads_ctrl_for_step12_scalpel_indels
 }
@@ -492,6 +492,13 @@ source $tmp_config_file
 echo "[`date`] Main flow begining..."
 echo "Patch: " ${Patch}
 
+if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) != "4608" ]] && [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ] ;then 
+step12_scalpel_indels
+wait
+exit
+fi
+
+
 step01_06_construct_bam
 if [ "$mutation_type" != "SNV" ];then
 step12_1_split_bam &
@@ -521,7 +528,7 @@ fi
 #fi
 
 wait
-touch ${work_path}/${name}_Main_stream_ok
+test -s ${work_path}/${name}_scalpel_indels.vcf  && touch ${work_path}/${name}_Main_stream_ok || rm -f ${work_path}/${name}_Main_stream_ok
 ###### Fri Feb 21 10:02:08 CST 2020 xw recommended end, added by fzc
 
 

@@ -83,9 +83,10 @@ parse_parameters(){
     fi
     
     if [ -z "$tmp_folder" ];then
-    tmp_folder=~/tmp
+    tmp_folder=${work_path}/BEIDOU_tmp
+    test -d $tmp_folder || mkdir -p -m 770 $tmp_folder 
     elif [ ! -w "$tmp_folder" ];then
-        echo "The tmp_folder($tmp_folder) is non-writable!You can execute the command \"chmod +100 $tmp_folder\" to make it writable." 
+        echo "The tmp_folder($tmp_folder) is non-writable!You can execute the command \"chmod +300 $tmp_folder\" to make it writable." 
         exit 1
     fi
     
