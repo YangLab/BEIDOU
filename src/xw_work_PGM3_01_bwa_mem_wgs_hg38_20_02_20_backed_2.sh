@@ -170,7 +170,7 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }
 threads_ctrl_for_step12_scalpel_indels(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_idles=$(echo "scale=0;($(cpu_info)-10)/1"|bc)
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
     if [[ $count_idles -gt $threads ]];then
     count_threads_ctrl_for_step12_scalpel_indels=$threads
     else
@@ -229,7 +229,7 @@ step7_HaplotypeCaller(){
     {
         echo "##Time `date +"%R %d %m"` VariantRecalibrator begining"
         if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ([ "${Patch}" != "True" ]) ;then
-        ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
+        ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"  -L "chrM"    2> >(tee ${work_path}/${name}_08_snps.log >&2)  ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L
         # ApplyVQSR SNP
         echo "##Time `date +"%R %d %m"` ApplyVQSR begining"
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
@@ -238,7 +238,7 @@ step7_HaplotypeCaller(){
         # 8.2 INDEL
         # VariantRecalibrator INDEL
         echo "##Time `date +"%R %d %m"` VariantRecalibrator indel begining"
-        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 $Mills_and_1000G_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"  2>${work_path}/${name}_08_indels.log
+        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 $Mills_and_1000G_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"   2> >(tee ${work_path}/${name}_08_indels.log >&2)
         # ApplyVQSR INDEL
         echo "##Time `date +"%R %d %m"` ApplyVQSR indel begining"
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY" -L "chrM"
@@ -249,7 +249,7 @@ step7_HaplotypeCaller(){
         if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then
         #Raw vcf files from variant calling step for all chromosomes except chromosome Y were pooled together for variant quality score recalibration (VQSR) using GATK’s VariantRecalibrator under SNP mode. Training, known and true sets for building the positive model are the SNPs which segregate among the classical laboratory strains of the Mouse Genomes Project 11 (2011 release REL-1211) on all chromosomes except chromosome Y. #Nat Genet. 2016 PMID: 27376238
         #All animals were jointly genotyped using GenotypeGVCFs, and variant quality score recalibration was performed separately for SNVs and indels using the VariantRecalibrator and ApplyRecalibration, using dbSNP for mouse v142 as the truth set of known variants. # Sci Rep. 2019 PMID: 31551502
-        ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2>${work_path}/${name}_08_snps.log   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
+        ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:MGP,known=false,training=true,truth=true,prior=15.0  $MGP_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" 2> >(tee ${work_path}/${name}_08_snps.log >&2)   ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"
 
         # ApplyVQSR SNP
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM" added backed ###### Mon Aug 17 09:20:44 CST 2020  added backed -L "chrM"
@@ -257,7 +257,7 @@ step7_HaplotypeCaller(){
         if [ "$mutation_type" != "SNV" ];then
         # 8.2 INDEL
         # VariantRecalibrator INDEL
-        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:MGP,known=true,training=true,truth=true,prior=12.0 $MGP_indel_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY"  -L "chrM" 2>${work_path}/${name}_08_indels.log ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM" ###### Mon Aug 17 09:20:44 CST 2020  added backed -L "chrM"
+        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:MGP,known=true,training=true,truth=true,prior=12.0 $MGP_indel_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY"  -L "chrM" 2> >(tee ${work_path}/${name}_08_indels.log >&2) ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM" ###### Mon Aug 17 09:20:44 CST 2020  added backed -L "chrM"
         # ApplyVQSR INDEL
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chrX" -L "chrY" -L "chrM" ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM" ###### Mon Aug 17 09:20:44 CST 2020  added backed -L "chrM"
         fi
@@ -398,20 +398,13 @@ step12_scalpel_indels(){
         chrn_sum=`ls -Sr ${work_path}/06_split_chr_bam/*.bam|wc -l`
         need_do_chrn_num=`echo $chrn_sum - $ok_chrn_num|bc`
         one_shot_chrn_num=`awk 'BEGIN{print int('${need_do_chrn_num}'/2+1)}'`
-        if [ "$threads" -gt `echo $one_shot_chrn_num -1|bc` ];then
-        threads_n=${one_shot_chrn_num}
-        threads_1=`awk 'BEGIN{print int('${threads}'/'${threads_n}')}'`
+        if [ "$need_do_chrn_num" -eq 1 ];then
+        threads_1=`threads_ctrl_for_step12_scalpel_indels`
         else
-        threads_n=1
-        threads_1=$threads
-        fi
-        if [ "$threads" -gt 10 ];then
-        threads_n=5
-        threads_1=`expr $threads / 5`
-        else
-        threads_n=1
-        threads_1=$thread
-        fi
+        threads_1=3
+        fi 
+        
+        
         for bam_file in `ls -Sr ${work_path}/06_split_chr_bam/*.bam` ;do ###### Tue Feb 25 22:26:59 CST 2020 added by fzc;
         #for bam_file in `ls -S ${work_path}/06_split_chr_bam/*.bam|head -n10` ;do ###### Tue Feb 25 22:26:59 CST 2020 added by fzc;
             #06_BQSR.REF_chr10.bam
@@ -426,6 +419,7 @@ step12_scalpel_indels(){
                 echo $bam_file error;continue
                 }
         {
+            rm -f ${bam_file}.bai
             ${dir_of_samtools}/samtools index $bam_file
             ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs ${threads_1} --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n}
             echo $output_file >>$scalpel_indels_list 
@@ -492,10 +486,14 @@ source $tmp_config_file
 echo "[`date`] Main flow begining..."
 echo "Patch: " ${Patch}
 
-if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) != "4608" ]] && [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ] ;then 
+if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) != "4608" ]]||[[ $(id -u) != "4825" ]] ) ;then 
+if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then
 step12_scalpel_indels
 wait
 exit
+else
+exit
+fi
 fi
 
 
