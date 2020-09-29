@@ -170,7 +170,7 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }
 threads_ctrl_for_step12_scalpel_indels(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_idles=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
+    count_idles=$(echo "scale=0;($(cpu_info)-3)/3"|bc)
     if [[ $count_idles -gt $threads ]];then
     count_threads_ctrl_for_step12_scalpel_indels=$threads
     else
