@@ -399,7 +399,7 @@ step12_scalpel_indels(){
         need_do_chrn_num=`echo $chrn_sum - $ok_chrn_num|bc`
         one_shot_chrn_num=`awk 'BEGIN{print int('${need_do_chrn_num}'/2+1)}'`
         if [ "$need_do_chrn_num" -eq 1 ];then
-        threads_1=`threads_ctrl_for_step12_scalpel_indels`
+        threads_1=30 #`threads_ctrl_for_step12_scalpel_indels`
         else
         threads_1=3
         fi 
