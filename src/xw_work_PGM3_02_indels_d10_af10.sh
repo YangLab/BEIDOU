@@ -64,6 +64,7 @@ awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' <(bcftools view
 
 # 12. depth ≥ 10/20 Allele Frequency ≥ 0.1
 # 12.1 gatk d10_af10/d10_af10
+#%s/d10_af10/d0_af0/g
 awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_gatk_PASS.txt > ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_gatk_d10_af10.txt
 # 12.2 scalpel d10_af10/d10_af10
 awk '{if($7>=10 && $8>=0.1)print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/Novel_Indels_d10_af10/${name}_11_indels_scalpel_PASS.txt > ${work_path}/Novel_Indels_d10_af10/${name}_12_indels_scalpel_d10_af10.txt
