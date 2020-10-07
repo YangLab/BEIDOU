@@ -486,7 +486,7 @@ source $tmp_config_file
 echo "[`date`] Main flow begining..."
 echo "Patch: " ${Patch}
 
-if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) == "4608" ]]||[[ $(id -u) == "4825" ]] ) ;then 
+if [[ $(uname -n) == "liyang-svr9" ]] ||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) == "4608" ]]||[[ $(id -u) == "4825" ]] )) ;then 
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then
 
 step12_scalpel_indels

@@ -15,7 +15,7 @@ genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed
 ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.fa
 dict_of_ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.dict
 #[vcf_files_for_BaseRecalibrator]
-dbsnp_vcf_for_BaseRecalibrator=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_b151_all_hg38.vcf
+dbsnp_vcf_for_BaseRecalibrator=/picb/rnomics3/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_all_hg38.vcf.gz
 #[vcf_files_for_VariantRecalibrator]
 hapmap_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/hapmap_3.3.hg38.vcf.gz
 file_1000G_omni_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/1000G_omni2.5.hg38.vcf.gz
@@ -23,8 +23,8 @@ file_1000G_phase1_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/1000G_ph
 dbsnp_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/dbsnp_146.hg38.vcf.gz
 Mills_and_1000G_vcf=/picb/rnomics3/xuew/Human/backup/GATK_bundle/hg38/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
 #[filtering file]
-filtering_dbSNP_vcf=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_b151_all_hg38.vcf
-UCSC_RepeatMask_bed=/data/rnomics6/xuew/Human/BE_WangLiJie/SBE_genome_PGM3/backup/vcf151/UCSC_RepeatMask_hg38.bed
+filtering_dbSNP_vcf=/picb/rnomics3/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/NCBI_dbSNP_all_hg38.vcf.gz
+UCSC_RepeatMask_bed=/picb/rnomics3/fuzhican/project/ABE_transcriptomics_off_target/dep_files/hg38/UCSC_RepeatMask_hg38.bed
 #[optional files(these files can be created automatic)]
 dir_of_individual_chr_genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common
 dir_of_individual_chr_ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_common
