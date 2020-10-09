@@ -508,11 +508,7 @@ step12_1_split_bam &
 fi
 step7_HaplotypeCaller &
 
-##if [[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]];then 
-#echo "run in $(uname -n) end at median point" 
-#wait
-#exit
-##fi
+
 if [ "$mutation_type" != "Indel" ];then
 step8_SNVs_strelka2
 step9_SNVs_lofreq
@@ -520,7 +516,7 @@ fi
 if [ "$mutation_type" != "SNV" ];then
 step10_indels_Manta
 step11_indels_strelka2
-if [ $(id -u) != "5158" ]||[ $(uname -n) != "liyang-svr6.icb.ac.cn" ];then 
+if [ $(id -u) != "5158" ]||([ $(uname -n) != "liyang-svr6.icb.ac.cn" ]&&[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]);then 
 
 step12_scalpel_indels
 fi

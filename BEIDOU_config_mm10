@@ -10,7 +10,6 @@ dir_of_Scalpel=/picb/rnomics3/xuew/software/WGS/scalpel-0.5.4
 dir_of_Manta=/picb/rnomics3/xuew/software/anaconda2019/bin
 dir_of_perl=/picb/rnomics3/xuew/software/anaconda2019/bin
 dir_of_intersectBed=/picb/rnomics3/xuew/software/anaconda2019/bin
-dir_of_tmp=~/tmp
 #[ref_genome]
 ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/mapping_tools_index/mm10_all.fa
 dict_of_ref_genome_path=/picb/rnomics4/rotation/fuzhican/project/ABE_transcriptomics_off_target/dep_files/mm10/mapping_tools_index/mm10_all.dict
