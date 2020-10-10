@@ -160,7 +160,7 @@ cpu_info(){
 }
 threads_ctrl_for_step7_HaplotypeCaller(){
     ###### Sat Sep 19 17:19:26 CST 2020
-    count_hap=$(echo "scale=0;($(cpu_info)-10)/3"|bc)
+    count_hap=$(echo "scale=0;($(cpu_info)-10)/2"|bc)
     if [[ $count_hap -gt 10 ]];then
     count_threads_ctrl_for_step7_HaplotypeCaller=10
     else
