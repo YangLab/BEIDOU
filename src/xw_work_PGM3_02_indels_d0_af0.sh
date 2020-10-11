@@ -54,13 +54,13 @@ tabix -fp vcf ${work_path}/${name}_10_indels_strelka2_total.vcf.gz
 # 11. PASS
 # 11.1 gatk
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_gatk_total.vcf.gz -O ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_gatk_PASS.vcf.gz --exclude-filtered true -select-type INDEL
-awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$NF}' <(bcftools view -H ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_gatk_PASS.vcf.gz) |awk '{split($6,x,":"); print $0"\t"x[2]"\t"x[3]}' |cut -f 1-2,4-5,7-8 |sed 's/,/\t/g' |awk '{if($7>0)print$1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$6/$7}' > ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_gatk_PASS.txt
+awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$NF}' <(${dir_of_bcftools}/bcftools view -H ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_gatk_PASS.vcf.gz) |awk '{split($6,x,":"); print $0"\t"x[2]"\t"x[3]}' |cut -f 1-2,4-5,7-8 |sed 's/,/\t/g' |awk '{if($7>0)print$1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$6/$7}' > ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_gatk_PASS.txt
 # 11.2 scalpel
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_scalpel_total.vcf -O ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_scalpel_PASS.vcf --exclude-filtered true -select-type INDEL
 awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_scalpel_PASS.vcf |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]}' |sed 's/,/\t/g' |awk '{print $0"\t"$5+$6"\t"$6/($5+$6)}' > ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_scalpel_PASS.txt
 # 11.3 Strelka2
 ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_10_indels_strelka2_total.vcf.gz -O ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_strelka2_PASS.vcf.gz --exclude-filtered true -select-type INDEL
-awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' <(bcftools view -H ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_strelka2_PASS.vcf.gz) |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]}' |sed 's/,/\t/g' |awk '{print $0"\t"$5+$6"\t"$6/($5+$6)}' > ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_strelka2_PASS.txt
+awk '{if($7=="PASS"&&$5!~",")print $1"\t"$2"\t"$4"\t"$5"\t"$NF}' <(${dir_of_bcftools}/bcftools view -H ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_strelka2_PASS.vcf.gz) |awk '{split($5,x,":"); print $1"\t"$2"\t"$3"\t"$4"\t"x[2]}' |sed 's/,/\t/g' |awk '{print $0"\t"$5+$6"\t"$6/($5+$6)}' > ${work_path}/Novel_Indels_d0_af0/${name}_11_indels_strelka2_PASS.txt
 
 # 12. depth ≥ 10/20 Allele Frequency ≥ 0.1
 # 12.1 gatk d0_af0/d0_af0
@@ -75,7 +75,7 @@ awk '{if($7>=0 && $8>=0 )print $1"\t"$2-1"\t"$2"\t"$1":"$2"\t"$0}' ${work_path}/
 {
 # gatk_d0_af0
 test -s ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_gatk_d0_af0.txt && {
-    ${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_gatk_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0.txt
+    ${dir_of_perl}/perl ${join_ID_pl} <(${dir_of_bcftools}/bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_gatk_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0.txt
     cut -f 1 ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0.txt |sort -u > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0.sites
     ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_gatk_d0_af0.txt ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0.sites 4 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_gatk_d0_af0_rmdbSNP151.txt
 }
@@ -83,7 +83,7 @@ test -s ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_gatk_d0_af0.txt && {
 {
 # scalpel_d0_af0
 test -s ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_scalpel_d0_af0.txt && {
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_scalpel_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0.txt
+${dir_of_perl}/perl ${join_ID_pl} <(${dir_of_bcftools}/bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_scalpel_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0.txt
 cut -f 1 ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0.txt |sort -u > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_scalpel_d0_af0.txt ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0.sites 4 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_scalpel_d0_af0_rmdbSNP151.txt
 }
@@ -91,7 +91,7 @@ ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d0_af0/${name}_1
 {
 # strelka2_d0_af0
 test -s ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_strelka2_d0_af0.txt && {
-${dir_of_perl}/perl ${join_ID_pl} <(bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_strelka2_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0.txt
+${dir_of_perl}/perl ${join_ID_pl} <(${dir_of_bcftools}/bcftools view $filtering_dbSNP_vcf -H|awk 'BEGIN{OFS="\t"}{print $1":"$2,$1,$2,$3,$4}') ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_strelka2_d0_af0.txt 1 4 |cut -f 1,4,7-9,13-18 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0.txt
 cut -f 1 ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0.txt |sort -u > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0.sites
 ${dir_of_perl}/perl ${select_v_ID_pl} ${work_path}/Novel_Indels_d0_af0/${name}_12_indels_strelka2_d0_af0.txt ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0.sites 4 > ${work_path}/Novel_Indels_d0_af0/${name}_13_all_strelka2_d0_af0_rmdbSNP151.txt
 }
