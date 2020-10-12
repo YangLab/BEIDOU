@@ -36,7 +36,7 @@ set -eo pipefail
     #/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed  
     #/picb/rnomics3/xuew/Human/backup/hg38_common/${chr_n}.bed  
 
-while getopts :1:2:o:n:m:c:t:p:g:f:h: ARGS  
+while getopts :1:2:o:n:m:c:t:p:s:g:f:h: ARGS  
     do  
     case $ARGS in   
         1)  
@@ -63,6 +63,9 @@ while getopts :1:2:o:n:m:c:t:p:g:f:h: ARGS
         p)  
             Patch=$OPTARG  
             ;;  
+        s)  
+            Patch_For_Scapel=$OPTARG  
+            ;; 
         m)  
             mutation_type=$OPTARG  
             ;;  
@@ -88,6 +91,9 @@ fi
 if [ "aa${mutation_type}aa" == "aaaa" ];then  
 mutation_type="all"  
 fi  
+if [ "aa${Patch_For_Scapel}aa" == "aaaa" ];then  
+Patch_For_Scapel="False"  
+fi 
 
 echo "mutation_type:$mutation_type"  
 ref_genome=$genome_build_version  
@@ -489,8 +495,8 @@ memkdir $work_path
 source $tmp_config_file  
 echo "[`date`] Main flow begining..."  
 echo "Patch: " ${Patch}  
-
-if [[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) == "4608" ]]||[[ $(id -u) == "4825" ]] )) ;then  
+if [ "$Patch_For_Scapel" == True ];then
+if [[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) == "4608" ]]||[[ $(id -u) == "4825" ]] )) ;then  
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then  
 
 step12_scalpel_indels  
@@ -501,7 +507,7 @@ echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists"
 exit  
 fi  
 fi  
-
+fi
 
 step01_06_construct_bam  
 if [ "$mutation_type" != "SNV" ];then  
