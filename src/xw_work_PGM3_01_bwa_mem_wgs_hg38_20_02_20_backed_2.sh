@@ -219,7 +219,7 @@ step7_HaplotypeCaller(){
           I=$input_variant_files \  
           O=$hap_out  
           
-          #%s#bcftools#${dir_of_bcftools}/bcftools#g
+          
     chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H $hap_out|uniq|sort|uniq|wc -l`  
     [[ $chrn_sum_infile -eq ${#chrn_list[@]} ]] && rm -r ${work_path}/hap_split_chr || {  
         mv $hap_out ${hap_out}_chrn_error  
