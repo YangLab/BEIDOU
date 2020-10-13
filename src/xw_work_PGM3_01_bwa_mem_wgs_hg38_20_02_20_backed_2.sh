@@ -116,13 +116,13 @@ metc(){
 memkdir(){  
     for path in $@  
     do  
-    test -d $path ||mkdir -p $path  
+    test -d $path || mkdir -p $path  
     done  
 }  
 merm(){  
     for file1 in $@  
     do  
-    test -e $file1 && rm $file1 || echo "$file1" not exist!  
+    test -e $file1 && rm -r $file1 || echo -e "\n" 
     done  
 }  
 #test -z "$dir_of_individual_chr_genome_range_bed" && dir_of_individual_chr_genome_range_bed=  
@@ -153,7 +153,9 @@ step01_06_construct_bam(){
     ${dir_of_gatk}/gatk BaseRecalibrator -I ${work_path}/${name}_05_2_markdup.bam -R ${ref_genome_path} -O ${work_path}/${name}_06_BQSR.table --known-sites $dbsnp_vcf_for_BaseRecalibrator  
     ${dir_of_gatk}/gatk ApplyBQSR -I ${work_path}/${name}_05_2_markdup.bam -R ${ref_genome_path} -bqsr ${work_path}/${name}_06_BQSR.table -O ${work_path}/${name}_06_BQSR.bam  
     }  
-    test -s ${work_path}/${name}_06_BQSR.bam && merm ${work_path}/${name}_05_2_markdup.bam  
+    if [ -s ${work_path}/${name}_06_BQSR.bam ] && [ -s ${work_path}/${name}_05_2_markdup.bam ];then
+    merm ${work_path}/${name}_05_2_markdup.bam 
+    fi
 
 }  
 cpu_info(){  
@@ -215,12 +217,9 @@ step7_HaplotypeCaller(){
     done  
     wait  
     ls ${work_path}/hap_split_chr/${name}_*_07_HC.vcf.gz >$input_variant_files  
-    java -jar ${dir_of_picard}/picard.jar MergeVcfs \  
-          I=$input_variant_files \  
-          O=$hap_out  
-          
-          
-    chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H $hap_out|uniq|sort|uniq|wc -l`  
+    java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$input_variant_files O=$hap_out  
+
+    chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H $hap_out|cut -f1|uniq|sort|uniq|wc -l`  
     [[ $chrn_sum_infile -eq ${#chrn_list[@]} ]] && rm -r ${work_path}/hap_split_chr || {  
         mv $hap_out ${hap_out}_chrn_error  
     }  
@@ -299,6 +298,7 @@ step8_SNVs_strelka2(){
         # /picb/rnomics3/xuew/software/WGS/strelka-2.9.10.centos6_x86_64/bin/configureStrelkaGermlineWorkflow.py  
 
             #20:47  
+        merm ${work_path}/SNVs_strelka2
         ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir ${work_path}/SNVs_strelka2  
         ${work_path}/SNVs_strelka2/runWorkflow.py -m local -j $threads  
         # output [./SNVs_strelka2/results/variants/variants.vcf.gz]  
@@ -345,7 +345,7 @@ step11_indels_strelka2(){
     # https://github.com/Illumina/strelka  
     # https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/quickStart.md  
     # /picb/rnomics3/xuew/software/WGS/strelka-2.9.10.centos6_x86_64/bin/configureStrelkaGermlineWorkflow.py  
-    rm -rf ${work_path}/indels_strelka2  
+    merm ${work_path}/indels_strelka2  
     ${dir_of_Strelka2}/configureStrelkaGermlineWorkflow.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --indelCandidates ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz --runDir ${work_path}/indels_strelka2  
     
     ${work_path}/indels_strelka2/runWorkflow.py -m local -j $threads  
@@ -441,7 +441,7 @@ step12_scalpel_indels(){
         java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}  
         ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22  
         ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"  
-        chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l`  
+        chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|cut -f1|sort|uniq|wc -l`  
         chrn_sum_inlist=`cat $scalpel_indels_list|wc -l`  
         if [ "$chrn_sum_inlist" != "$chrn_sum" ];then  
         echo -e 'ERROR! ! ! ! ! #'" \n $scalpel_indels_list do not have correct chromosome number; please check it! "  
@@ -449,7 +449,7 @@ step12_scalpel_indels(){
         fi  
 
         if [ "$chrn_sum" != "$chrn_sum_infile" ] ;then  
-        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_scalpel_indels.vcf do not have correct chromosome number; please check it! \n ${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|sort|uniq|wc -l"  
+        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_scalpel_indels.vcf do not have correct chromosome number; please check it! \n ${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|cut -f1|sort|uniq|wc -l"  
         mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error  
         fi  
         #_scalpel_indels  
@@ -495,26 +495,35 @@ memkdir $work_path
 source $tmp_config_file  
 echo "[`date`] Main flow begining..."  
 echo "Patch: " ${Patch}  
+echo "Patch_For_Scapel: " ${Patch_For_Scapel}  
 if [ "$Patch_For_Scapel" == True ];then
-if [[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && ([[ $(id -u) == "4608" ]]||[[ $(id -u) == "4825" ]] )) ;then  
+echo "00" 
+if [[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then  
-
-step12_scalpel_indels  
+echo "01"
+step12_scalpel_indels 
+echo "02" 
 wait  
+echo "03" 
 exit  
 else  
-echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists"  
+echo "04" 
+echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists" 
+echo "05"  
 exit  
 fi  
 fi  
 fi
-
+echo "1"
 step01_06_construct_bam  
+echo "2"
 if [ "$mutation_type" != "SNV" ];then  
 step12_1_split_bam &  
+echo "3"
 fi  
+echo "4"
 step7_HaplotypeCaller &  
-
+echo "5"
 
 if [ "$mutation_type" != "Indel" ];then  
 step8_SNVs_strelka2  
@@ -528,11 +537,6 @@ if [ $(id -u) != "5158" ]||([ $(uname -n) != "liyang-svr6.icb.ac.cn" ]&&[ $(unam
 step12_scalpel_indels  
 fi  
 fi  
-
-#if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]];then  
-#wait  
-#exit  
-#fi  
 
 wait  
 test -s ${work_path}/${name}_scalpel_indels.vcf  && touch ${work_path}/${name}_Main_stream_ok || rm -f ${work_path}/${name}_Main_stream_ok  

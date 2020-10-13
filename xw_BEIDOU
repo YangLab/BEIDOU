@@ -2,7 +2,7 @@
 MYDIR=`dirname $0`
 work_path=$PWD
 MYNAME=BEIDOU
-while getopts :1:2:o:n:c:t:g:f:h:p: ARGS  
+while getopts :1:2:o:n:c:t:g:f:h:p:s ARGS  
     do  
     case $ARGS in   
         1)  
@@ -31,6 +31,9 @@ while getopts :1:2:o:n:c:t:g:f:h:p: ARGS
             ;;
         p)
             patch_flag=$OPTARG
+            ;;
+        s)
+            Patch_For_Scapel=True
             ;;
         d)
             tmp_folder=$OPTARG
@@ -274,7 +277,7 @@ SNV_calling_work_flow(){
     rm -f ${work_path}/${name}_Main_stream_ok
 }
 Indel_calling_work_flow(){
-    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version -m "Indel"
+    bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version -m "Indel" -s $Patch_For_Scapel #Patch_For_Scapel
 
     test -e ${work_path}/${name}_Main_stream_ok && bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
     rm -f ${work_path}/${name}_Main_stream_ok
