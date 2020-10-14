@@ -122,7 +122,7 @@ memkdir(){
 merm(){  
     for file1 in $@  
     do  
-    test -e $file1 && rm -r $file1 || echo -e "\n" 
+    test -e $file1 && rm -r $file1 || echo " " 
     done  
 }  
 #test -z "$dir_of_individual_chr_genome_range_bed" && dir_of_individual_chr_genome_range_bed=  
