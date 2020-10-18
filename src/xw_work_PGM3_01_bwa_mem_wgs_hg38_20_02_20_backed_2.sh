@@ -237,7 +237,7 @@ step7_HaplotypeCaller(){
     if [ "$genome_build_version" == "hg38" ];then  
     {  
         echo "##Time `date +"%R %d %m"` VariantRecalibrator begining"  
-        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ([ "${Patch}" != "True" ]) ;then  
+        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ])||([ ! -s "${work_path}/${name}_08_indels_VQSR.vcf" ]) || ([ "${Patch}" != "True" ]) ;then  
         ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches --rscript-file ${work_path}/${name}_08_snps.R  -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"  -L "chrM"  2> >(tee ${work_path}/${name}_08_snps.log >&2)  ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ;###### Wed Sep 30 08:50:47 CST 2020 remove -L "chrM" ###### Thu Oct 8 10:54:57 CST 2020 add back -L "chrM"  
         # ApplyVQSR SNP  
         echo "##Time `date +"%R %d %m"` ApplyVQSR begining"  
@@ -278,7 +278,7 @@ step7_HaplotypeCaller(){
     # 9.1 select SNP  
     if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then  
     ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_09_SNVs_VQSR.vcf.gz -select-type SNP  
-    test -s ${work_path}/${name}_09_SNVs_VQSR.vcf.gz && merm ${work_path}/${name}_08_snps.recal ${work_path}/${name}_08_snps_VQSR.vcf  
+    test -s ${work_path}/${name}_09_SNVs_VQSR.vcf.gz -a -s ${work_path}/${name}_08_indels_VQSR.vcf && merm ${work_path}/${name}_08_snps.recal ${work_path}/${name}_08_snps_VQSR.vcf  
     fi  
     if [ "$mutation_type" != "SNV" ];then  
     # 9.2 select INDEL  
