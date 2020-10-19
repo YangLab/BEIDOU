@@ -178,7 +178,7 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }  
 threads_ctrl_for_step12_scalpel_indels(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
-    count_idles=$(echo "scale=0;($(cpu_info)-20)/3"|bc)  
+    count_idles=$(echo "scale=0;($(cpu_info)-5)/3"|bc)  
     if [[ $count_idles -gt $threads ]];then  
     count_threads_ctrl_for_step12_scalpel_indels=$threads  
     else  
@@ -278,7 +278,9 @@ step7_HaplotypeCaller(){
     # 9.1 select SNP  
     if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then  
     ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g" SelectVariants -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_09_SNVs_VQSR.vcf.gz -select-type SNP  
-    test -s ${work_path}/${name}_09_SNVs_VQSR.vcf.gz -a -s ${work_path}/${name}_08_indels_VQSR.vcf && merm ${work_path}/${name}_08_snps.recal ${work_path}/${name}_08_snps_VQSR.vcf  
+    if [ -s ${work_path}/${name}_09_SNVs_VQSR.vcf.gz ]&&[ -s ${work_path}/${name}_08_indels_VQSR.vcf ];then
+    merm ${work_path}/${name}_08_snps.recal ${work_path}/${name}_08_snps_VQSR.vcf  
+    fi
     fi  
     if [ "$mutation_type" != "SNV" ];then  
     # 9.2 select INDEL  
@@ -509,20 +511,28 @@ fi
 fi  
 fi
 
+echo 1
 step01_06_construct_bam  
+echo 2
+
 
 if [ "$mutation_type" != "SNV" ];then  
+echo 3
 step12_1_split_bam &  
-
+echo 4
 fi  
-
+echo 5
 step7_HaplotypeCaller &  
-
+echo 6
 
 if [ "$mutation_type" != "Indel" ];then  
+echo 7
 step8_SNVs_strelka2  
+echo 7.5
 step9_SNVs_lofreq  
+echo 8
 fi  
+echo 9
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
