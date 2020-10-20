@@ -331,6 +331,7 @@ if [ ! -s "${work_path}/${name}_09_indels_Manta.vcf.gz" ] || [ "${Patch}" != "Tr
     # /picb/rnomics3/wangying/tools/manta-1.6.0.centos6_x86_64/bin/configManta.py  
     # /picb/rnomics3/xuew/software/WGS/manta-1.6.0.centos6_x86_64/bin/configManta.py  
         #20-03-15 20:56:26  
+    merm ${work_path}/indels_Manta
     ${dir_of_Manta}/configManta.py --bam ${work_path}/${name}_06_BQSR.bam --referenceFasta ${ref_genome_path} --runDir ${work_path}/indels_Manta  
     ${work_path}/indels_Manta/runWorkflow.py -j $threads  
     #zcat ${work_path}/indels_Manta/results/variants/candidateSmallIndels.vcf.gz > ${work_path}/${name}_09_indels_Manta.vcf  
