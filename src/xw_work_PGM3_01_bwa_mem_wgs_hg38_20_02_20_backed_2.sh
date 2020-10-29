@@ -507,7 +507,7 @@ wait
 exit  
 else  
 echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists" 
-exit  
+#exit  
 fi  
 fi  
 fi
