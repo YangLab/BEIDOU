@@ -247,7 +247,7 @@ step7_HaplotypeCaller(){
         # 8.2 INDEL  
         # VariantRecalibrator INDEL  
         echo "##Time `date +"%R %d %m"` VariantRecalibrator indel begining"  
-        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 $Mills_and_1000G_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches --rscript-file ${work_path}/${name}_08_indels.R -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"   -L "chrM"  2> >(tee ${work_path}/${name}_08_indels.log >&2)  ######### Tue Oct 27 18:11:45 CST 2020 detele --rscript-file ${work_path}/${name}_08_indels.R 
+        ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf -O ${work_path}/${name}_08_indels.recal -resource:mills,known=true,training=true,truth=true,prior=12.0 $Mills_and_1000G_vcf -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 -mode INDEL --tranches-file ${work_path}/${name}_08_indels.tranches -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"   -L "chrM"  2> >(tee ${work_path}/${name}_08_indels.log >&2)  ######### Tue Oct 27 18:11:45 CST 2020 detele --rscript-file ${work_path}/${name}_08_indels.R 
         # ApplyVQSR INDEL  
         echo "##Time `date +"%R %d %m"` ApplyVQSR indel begining"  
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_08_snps_VQSR.vcf --recal-file ${work_path}/${name}_08_indels.recal -O ${work_path}/${name}_08_indels_VQSR.vcf --tranches-file ${work_path}/${name}_08_indels.tranches -mode INDEL -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"  -L "chrM"
@@ -500,14 +500,14 @@ echo "[`date`] Main flow begining..."
 echo "Patch: " ${Patch}  
 echo "Patch_For_Scapel: " ${Patch_For_Scapel}  
 if [ "$Patch_For_Scapel" == True ];then
-if [[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
+if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]]||[[ $(uname -n) == "bigdata-big1" ]]||[[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then  
 step12_scalpel_indels 
 wait  
 exit  
 else  
 echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists" 
-#exit  
+exit  
 fi  
 fi  
 fi
@@ -537,7 +537,7 @@ echo 9
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
-if [ $(id -u) != "5158" ]||([ $(uname -n) != "liyang-svr6.icb.ac.cn" ]&&[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]);then  
+if [ $(id -u) != "5158" ]||([[ $(uname -n) != "bigdata-big1" ]]&&[[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]]);then  
 
 step12_scalpel_indels  
 fi  
