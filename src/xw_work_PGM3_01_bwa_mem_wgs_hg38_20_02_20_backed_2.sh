@@ -169,8 +169,8 @@ cpu_info(){
 threads_ctrl_for_step7_HaplotypeCaller(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
     count_hap=$(echo "scale=0;($(cpu_info)-10)/2"|bc)  
-    if [[ $count_hap -gt 10 ]];then  
-    count_threads_ctrl_for_step7_HaplotypeCaller=10  
+    if [[ $count_hap -gt $threads ]];then  
+    count_threads_ctrl_for_step7_HaplotypeCaller=$threads  
     else  
     count_threads_ctrl_for_step7_HaplotypeCaller=`echo "scale=0;$count_hap/1"|bc`  
     fi  
@@ -178,11 +178,11 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }  
 threads_ctrl_for_step12_scalpel_indels(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
-    count_idles=$(echo "scale=0;($(cpu_info)-5)/3"|bc)  
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/3"|bc)  
     if [[ $count_idles -gt $threads ]];then  
     count_threads_ctrl_for_step12_scalpel_indels=$threads  
     else  
-    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/1"|bc`  
+    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/3"|bc`  
     fi  
     echo $count_threads_ctrl_for_step12_scalpel_indels  
 }  
@@ -493,14 +493,14 @@ skipping_steps(){
         sed '1,58d' ${work_path}/${name}_01_GRCh37_b151_p13_all.vcf |awk '{print $1":"$2"\t"$1"\t"$2"\t"$3"\t"$4"\t"$5}' > ${work_path}/${name}_01_GRCh37_b151_p13_all.txt  
     }  
     fi  
-}  
-memkdir $work_path  
+}   
+memkdir $work_path 
 source $tmp_config_file  
 echo "[`date`] Main flow begining..."  
 echo "Patch: " ${Patch}  
 echo "Patch_For_Scapel: " ${Patch_For_Scapel}  
 if [ "$Patch_For_Scapel" == True ];then
-if [[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]]||[[ $(uname -n) == "bigdata-big1" ]]||[[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
+if [[ $(uname -n) == "bigdata-big1" ]]||[[ $(uname -n) == "liyang-svr2.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then  
 step12_scalpel_indels 
 wait  
@@ -537,7 +537,7 @@ echo 9
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
-if [ $(id -u) != "5158" ]||([[ $(uname -n) != "bigdata-big1" ]]&&[[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]]);then  
+if [ $(id -u) != "5158" ]||([[ $(uname -n) != "bigdata-big1" ]]&&[[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]]&&[[ $(uname -n) != "liyang-svr6.icb.ac.cn" ]]);then  
 
 step12_scalpel_indels  
 fi  
