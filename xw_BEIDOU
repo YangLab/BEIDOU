@@ -58,19 +58,19 @@ check_status(){
     ###### Sun Mar 1 21:06:32 CST 2020 fzc
     bin_file=$1
     status=0
-    test -e $bin_file && { 
+    if [ -e $bin_file ];then
         let status+=1
         test -x $bin_file && let status+=1
-    }
-    test "$status" == "0" && {
+    fi
+    if [ "$status" == "0" ];then
         echo "$bin_file is non-exist"
         check_token="F"
-    }
-    test "$status" == "1" && {
+    
+    elif [ "$status" == "1" ];then
         echo "$bin_file is not executable!"
         check_token="F" 
-    }
-		a=a
+    fi
+    
 }
 write_execute_para_list(){
     ###### Mon Jul 20 09:07:15 CST 2020 fzc
@@ -189,7 +189,10 @@ echo "[`date`]Finish parse_parameters"
 }
 check_optional_para(){
     ###### Sun Mar 1 21:06:04 CST 2020 fzc
-    tmp_need_rm_file_list=($genome_range_bed )
+    #tmp_need_rm_file_list=($genome_range_bed )
+    echo $config_file
+    source $config_file
+    
     if [ ! -s ${ref_genome_path}.fai ];then
     if [ -w `dirname $ref_genome_path` ];then
     ${dir_of_samtools}/samtools faidx $ref_genome_path
@@ -202,11 +205,14 @@ check_optional_para(){
     else
     fai_file=${ref_genome_path}.fai 
     fi
+    
     genome_range_bed=$dir_of_tmp/Genome_range_bed_`date +%s`.bed
     write_execute_para_list genome_range_bed $genome_range_bed
     awk 'BEGIN{OFS="\t"}{print $1,"0",$2}' $fai_file >$genome_range_bed
-    chrn_list=`awk '{print $1}' $fai_file`
+    #grep -v "chr[^_]\{1,2\}
+    chrn_list=`awk '{print $1}' $fai_file|grep "chr[^_]\{1,2\}$"`
     #echo ${chrn_list[@]}
+    check_token="T"
     para1=dir_of_individual_chr_ref_genome_path
     para1_value=`eval echo "$"$para1`
     tmp_a="aa${para1_value}aa"
@@ -221,7 +227,8 @@ check_optional_para(){
     test "$check_token" == "F" && {
     write_execute_para_list dir_of_individual_chr_ref_genome_path $dir_of_tmp
     sep_work_path=$dir_of_tmp
-    tmp_need_rm_file_list=(${tmp_need_rm_file_list[@]} `awk '{if ($0~/^>/){chrn=substr($0,2)};print >"'$sep_work_path'/"chrn".fa"}$0~/^>/{print chrn".fa"}' $ref_genome_path`)
+    awk '{if ($0~/^>/){chrn=substr($0,2)};print >"'$sep_work_path'/"chrn".fa"}' $ref_genome_path
+    #tmp_need_rm_file_list=(${tmp_need_rm_file_list[@]} `awk '{if ($0~/^>/){chrn=substr($0,2)};print >"'$sep_work_path'/"chrn".fa"}$0~/^>/{print chrn".fa"}' $ref_genome_path`)
     ${dir_of_samtools}/samtools faidx ${sep_work_path}/*.fa
     }
 

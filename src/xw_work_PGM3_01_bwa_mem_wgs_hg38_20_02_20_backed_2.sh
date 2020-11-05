@@ -174,7 +174,12 @@ threads_ctrl_for_step7_HaplotypeCaller(){
     else  
     count_threads_ctrl_for_step7_HaplotypeCaller=`echo "scale=0;$count_hap/1"|bc`  
     fi  
-    echo $count_threads_ctrl_for_step7_HaplotypeCaller  
+    if [ $count_threads_ctrl_for_step7_HaplotypeCaller -gt 1 ];then
+    echo $count_threads_ctrl_for_step7_HaplotypeCaller
+    else
+    echo 1
+    fi
+      
 }  
 threads_ctrl_for_step12_scalpel_indels(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
@@ -184,7 +189,11 @@ threads_ctrl_for_step12_scalpel_indels(){
     else  
     count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/3"|bc`  
     fi  
+    if [ $count_threads_ctrl_for_step12_scalpel_indels -gt 1 ];then
     echo $count_threads_ctrl_for_step12_scalpel_indels  
+    else
+    echo 1
+    fi
 }  
 
 step7_HaplotypeCaller(){  
@@ -228,8 +237,9 @@ step7_HaplotypeCaller(){
     echo "##Time `date +"%R %d %m"` hap finished"  
     }  
 
-
-    if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ] || [ ! -s "${work_path}/${name}_09_indels_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ]) ;then  
+    NOT_RUN=True
+    
+    if ([ "$NOT_RUN" != "True" ]) && ( ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ] || [ ! -s "${work_path}/${name}_09_indels_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ])) ;then  
     {  
     # 8. VQSR  
     # 8.1 SNP  
@@ -237,13 +247,13 @@ step7_HaplotypeCaller(){
     if [ "$genome_build_version" == "hg38" ];then  
     {  
         echo "##Time `date +"%R %d %m"` VariantRecalibrator begining"  
-        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ])||([ ! -s "${work_path}/${name}_08_indels_VQSR.vcf" ]) || ([ "${Patch}" != "True" ]) ;then  
+        if ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ]&&[ ! -s ${work_path}/${name}_08_snps_VQSR.vcf ])||([ ! -s "${work_path}/${name}_08_indels_VQSR.vcf" ]&&[ ! -s ${work_path}/${name}_08_snps_VQSR.vcf ]) || ([ "${Patch}" != "True" ]) ;then  
         ${dir_of_gatk}/gatk --java-options "-Xmx60g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" VariantRecalibrator -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz -O ${work_path}/${name}_08_snps.recal --resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_vcf --resource:omni,known=false,training=true,truth=false,prior=12.0 $file_1000G_omni_vcf --resource:1000G,known=false,training=true,truth=false,prior=10.0 $file_1000G_phase1_vcf --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 $dbsnp_vcf -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP --max-gaussians 4 --tranches-file ${work_path}/${name}_08_snps.tranches -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"  -L "chrM"  2> >(tee ${work_path}/${name}_08_snps.log >&2)  ###### Thu Apr 23 08:56:09 CST 2020 fzc add -L ;###### Wed Sep 30 08:50:47 CST 2020 remove -L "chrM" ###### Thu Oct 8 10:54:57 CST 2020 add back -L "chrM" ###### Tue Oct 27 18:12:11 CST 2020 detele --rscript-file ${work_path}/${name}_08_snps.R 
         # ApplyVQSR SNP  
         echo "##Time `date +"%R %d %m"` ApplyVQSR begining"  
         ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" ApplyVQSR -R ${ref_genome_path} -V ${work_path}/${name}_07_HC.vcf.gz --recal-file ${work_path}/${name}_08_snps.recal -O ${work_path}/${name}_08_snps_VQSR.vcf --tranches-file ${work_path}/${name}_08_snps.tranches -mode SNP -ts-filter-level 95 -L "chr1" -L "chr2" -L "chr3" -L "chr4" -L "chr5" -L "chr6" -L "chr7" -L "chr8" -L "chr9" -L "chr10" -L "chr11" -L "chr12" -L "chr13" -L "chr14" -L "chr15" -L "chr16" -L "chr17" -L "chr18" -L "chr19" -L "chr20" -L "chr21" -L "chr22" -L "chrX" -L "chrY"  -L "chrM" 
         fi  
-        if [ "$mutation_type" != "SNV" ];then  
+        if [ "$mutation_type" != "SNV" ]&&([ ! -s "${work_path}/${name}_08_indels_VQSR.vcf" ]&&[ ! -s ${work_path}/${name}_09_indels_VQSR.vcf.gz ]);then  
         # 8.2 INDEL  
         # VariantRecalibrator INDEL  
         echo "##Time `date +"%R %d %m"` VariantRecalibrator indel begining"  
@@ -437,7 +447,11 @@ step12_scalpel_indels(){
             ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs ${threads_1} --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n}  
             echo $output_file >>$scalpel_indels_list  
         }&  
-        metc `threads_ctrl_for_step12_scalpel_indels`  
+        metc_n=`threads_ctrl_for_step12_scalpel_indels`
+        if [ "$metc_n" =="" ];then
+        metc_n=1
+        fi 
+        metc $metc_n  
         done  
         wait  
         ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list  
@@ -537,7 +551,7 @@ echo 9
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
-if [ $(id -u) != "5158" ]||([[ $(uname -n) != "bigdata-big1" ]]&&[[ $(uname -n) != "liyang-svr3.icb.ac.cn" ]]&&[[ $(uname -n) != "liyang-svr6.icb.ac.cn" ]]);then  
+if [ $(id -u) != "5158" ]||([[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]);then  
 
 step12_scalpel_indels  
 fi  
