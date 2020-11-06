@@ -183,11 +183,11 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }  
 threads_ctrl_for_step12_scalpel_indels(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
-    count_idles=$(echo "scale=0;($(cpu_info)-10)/3"|bc)  
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/1"|bc)  
     if [[ $count_idles -gt $threads ]];then  
     count_threads_ctrl_for_step12_scalpel_indels=$threads  
     else  
-    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/3"|bc`  
+    count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/1"|bc`  
     fi  
     if [ $count_threads_ctrl_for_step12_scalpel_indels -gt 1 ];then
     echo $count_threads_ctrl_for_step12_scalpel_indels  
@@ -424,7 +424,7 @@ step12_scalpel_indels(){
         if [ "$need_do_chrn_num" -eq 1 ];then  
         threads_1=30 #`threads_ctrl_for_step12_scalpel_indels`  
         else  
-        threads_1=3  
+        threads_1=1 
         fi  
         
         
@@ -537,7 +537,7 @@ step12_1_split_bam &
 echo 4
 fi  
 echo 5
-step7_HaplotypeCaller &  
+step7_HaplotypeCaller  
 echo 6
 
 if [ "$mutation_type" != "Indel" ];then  
