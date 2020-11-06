@@ -183,7 +183,7 @@ threads_ctrl_for_step7_HaplotypeCaller(){
 }  
 threads_ctrl_for_step12_scalpel_indels(){  
     ###### Sat Sep 19 17:19:26 CST 2020  
-    count_idles=$(echo "scale=0;($(cpu_info)-5)/1"|bc)  
+    count_idles=$(echo "scale=0;($(cpu_info)-10)/1"|bc)  
     if [[ $count_idles -gt $threads ]];then  
     count_threads_ctrl_for_step12_scalpel_indels=$threads  
     else  
@@ -475,108 +475,6 @@ step12_scalpel_indels(){
 
     fi  
 }  
-step12_scalpel_indels_parallel(){  
-    if [ ! -s ${work_path}/${name}_scalpel_indels.vcf ] || [ "${Patch}" != "True" ];then  
-    {  
-        #wait  
-        # Scalpel v0.5.4 [indels @2]  
-        # http://scalpel.sourceforge.net/index.html  
-        # /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery  
-        # scalpel-discovery --single --bam file.bam --ref genome.fa --bed 22:1-51304566 --window 600 --numprocs 10 [OPTIONS]  
-            #20-03-15 21:00:51  
-        #${dir_of_Scalpel}/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.bam --ref ${ref_genome_path} --bed $genome_range_bed --window 600 --numprocs 10 --dir ${work_path}/indels_scalpel ###### Sun Mar 15 21:47:29 CST 2020 annotated by fzc confirmed by xw  
-        #  
-        #60  
-        # output [./indels_scalpel/variants.indel.vcf]  
-
-        #memkdir ${work_path}/06_split_chr_bam  
-        #${dir_of_bamtools}/bamtools split -in ${work_path}/${name}_06_BQSR.bam -stub ${work_path}/06_split_chr_bam/${name}_06_BQSR -reference  
-
-
-        # sh ../script_shell/indel_Scalpel_01_split_bam.sh  
-        #sh ../../../script_shell/indel_Scalpel_02_del_chrUn_random_alt_hg38.sh ###### Tue Feb 25 22:11:02 CST 2020 fzc;  
-        #sh ../../../script_shell/indel_Scalpel_03_samtools_quickcheck.sh  ###### Tue Feb 25 22:27:41 CST 2020 fzc;  
-        #sh ../../../script_shell/indel_Scalpel_04_samtools_index_hg38.sh ###### Tue Feb 25 22:27:48 CST 2020 fzc;  
-        #sh ../../../script_shell/indel_Scalpel_05_discovery_split_chr_pu32_hg38.sh ###### Tue Feb 25 22:27:54 CST 2020 fzc;  
-
-
-        while [ ! -e "${work_path}/06_split_chr_bam/split_bam_ok" ];do  
-        sleep 300  
-        done  
-
-
-        for file1 in `ls ${work_path}/06_split_chr_bam/*.bam|grep -v "chr[^_]\{1,2\}\.bam"`  
-        do  
-        merm $file1  
-        done ###### Tue Feb 25 22:11:10 CST 2020 fzc;  
-        scalpel_indels_list=${work_path}/${name}_scalpel_indels_list  
-        if [ -e ${scalpel_indels_list} ];then  
-        ok_chrn_num=`cat ${scalpel_indels_list}|sort|uniq|wc -l`  
-        else  
-        ok_chrn_num=0  
-        fi  
-
-        merm $scalpel_indels_list  
-        #20-03-15 22:04:25 100  
-        chrn_sum=`ls -Sr ${work_path}/06_split_chr_bam/*.bam|wc -l`  
-        need_do_chrn_num=`echo $chrn_sum - $ok_chrn_num|bc`  
-        one_shot_chrn_num=`awk 'BEGIN{print int('${need_do_chrn_num}'/2+1)}'`  
-        
-        
-        metc_n=`threads_ctrl_for_step12_scalpel_indels`
-        if [ "$metc_n" =="" ];then
-        metc_n=1
-        fi 
-        metc $metc_n  
-        
-        export -f scalpel_one_chr 
-        export work_path scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed
-        ${dir_of_parallel}/parallel -j $metc_n scalpel_one_chr ::: `ls -S ${work_path}/06_split_chr_bam/*.bam` 
-        
-        wait  
-        ##awk '{print "06_split_chr_bam/scalpel_"$0"/variants.indel.vcf"}' /picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.txt > scalpel_indels.list  
-        java -jar ${dir_of_picard}/picard.jar MergeVcfs I=$scalpel_indels_list O=${work_path}/${name}_scalpel_indels.vcf SEQUENCE_DICTIONARY=${dict_of_ref_genome_path}  
-        ## /picb/rnomics3/xuew/software/WGS/scalpel-0.5.4/scalpel-discovery --single --bam ${work_path}/${name}_06_BQSR.REF_chr22.bam --ref /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.fa --bed /picb/rnomics3/xuew/Human/backup/hg38_common/chr22.bed --window 600 --numprocs 10 --dir scalpel_chr22  
-        ###### Tue Jul 21 14:04:29 CST 2020 deletion -L "chrM"  
-        chrn_sum_infile=`${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|cut -f1|sort|uniq|wc -l`  
-        chrn_sum_inlist=`cat $scalpel_indels_list|wc -l`  
-        if [ "$chrn_sum_inlist" != "$chrn_sum" ];then  
-        echo -e 'ERROR! ! ! ! ! #'" \n $scalpel_indels_list do not have correct chromosome number; please check it! "  
-        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error  
-        fi  
-
-        if [ "$chrn_sum" != "$chrn_sum_infile" ] ;then  
-        echo -e 'ERROR! ! ! ! ! #'" \n ${work_path}/${name}_scalpel_indels.vcf do not have correct chromosome number; please check it! \n ${dir_of_bcftools}/bcftools view -H ${work_path}/${name}_scalpel_indels.vcf|cut -f1|sort|uniq|wc -l"  
-        mv ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_scalpel_indels.vcf_chrn_error  
-        fi  
-        #_scalpel_indels  
-        test -s ${work_path}/${name}_scalpel_indels.vcf && rm -r ${work_path}/06_split_chr_bam  
-        }  
-
-    fi  
-}  
-scalpel_one_chr(){
-    bam_file=$1
-    threads_1=1 
-    #work_path  scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed 
-    chr_n=$(echo $bam_file|awk -F ".REF_" '{print $2}'|cut -d. -f1)  
-        output_file=${work_path}/06_split_chr_bam/scalpel_${chr_n}/variants.indel.vcf  
-        test -s $output_file  &&{  
-            echo $output_file >>$scalpel_indels_list  
-            continue  
-        }|| echo "BEGIN $output_file"  
-        test -d ${work_path}/06_split_chr_bam/scalpel_${chr_n} && rm -rf ${work_path}/06_split_chr_bam/scalpel_${chr_n}  
-        ${dir_of_samtools}/samtools quickcheck $bam_file || {  
-            echo $bam_file error;continue  
-            }  
-    {  
-        rm -f ${bam_file}.bai  
-        ${dir_of_samtools}/samtools index $bam_file  
-        ${dir_of_Scalpel}/scalpel-discovery --single --bam $bam_file --ref ${dir_of_individual_chr_ref_genome_path}/${chr_n}.fa --bed ${dir_of_individual_chr_genome_range_bed}/${chr_n}.bed --window 600 --numprocs ${threads_1} --dir ${work_path}/06_split_chr_bam/scalpel_${chr_n}  
-        echo $output_file >>$scalpel_indels_list  
-    }
-}
- 
 skipping_steps(){  
     ###### Fri Feb 21 10:13:22 CST 2020 xw recommend skipping next two steps, added by fzc  
     NOT_RUN=True  
@@ -618,8 +516,7 @@ echo "Patch_For_Scapel: " ${Patch_For_Scapel}
 if [ "$Patch_For_Scapel" == True ];then
 if [[ $(uname -n) == "bigdata-big1" ]]||[[ $(uname -n) == "liyang-svr2.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr3.icb.ac.cn" ]]||[[ $(uname -n) == "liyang-svr9" ]] || [[ $(uname -n) == "liyang-svr8" ]] ||[[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]||([[ $(uname -n) == "liyang-svr6.icb.ac.cn" ]] && [[ $(id -u) == "4608" ]]) ;then  
 if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then  
-# step12_scalpel_indels 
-step12_scalpel_indels_parallel
+step12_scalpel_indels 
 wait  
 exit  
 else  

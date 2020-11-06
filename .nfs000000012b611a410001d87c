@@ -114,8 +114,7 @@ parse_parameters(){
     fi
     test -e $config_file && echo "use $config_file as config_file" 
     source $config_file
-    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bcftools dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta dir_of_perl dir_of_parallel dir_of_intersectBed ref_genome_path dbsnp_vcf_for_BaseRecalibrator dbsnp_vcf filtering_dbSNP_vcf UCSC_RepeatMask_bed)
-
+    para_list=(dir_of_bwa dir_of_samtools dir_of_gatk dir_of_picard dir_of_bcftools dir_of_bamtools dir_of_lofreq dir_of_Strelka2 dir_of_Scalpel dir_of_Manta dir_of_perl dir_of_intersectBed ref_genome_path dbsnp_vcf_for_BaseRecalibrator dbsnp_vcf filtering_dbSNP_vcf UCSC_RepeatMask_bed)
     non_specified_para_list=""
     non_exists_para_list=""
     for para1 in ${para_list[@]}
@@ -154,7 +153,6 @@ parse_parameters(){
         fi
     }
     done
-
     if [ "$genome_build_version" == "hg38" ];then
     para_list_species_specific=(hapmap_vcf file_1000G_omni_vcf file_1000G_phase1_vcf Mills_and_1000G_vcf)
     elif [ "$genome_build_version" == "mm10" ];then
