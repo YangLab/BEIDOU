@@ -527,7 +527,6 @@ step12_scalpel_indels_parallel(){
         if [ "$metc_n" =="" ];then
         metc_n=1
         fi 
-        metc $metc_n  
         
         export -f scalpel_one_chr 
         export work_path scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed
@@ -557,7 +556,11 @@ step12_scalpel_indels_parallel(){
 }  
 scalpel_one_chr(){
     bam_file=$1
-    threads_1=1 
+    threads_1=5 
+    if [[ `echo $bam_file|grep  chr1.bam` ]];then
+    threads_1=5
+    fi
+
     #work_path  scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed 
     chr_n=$(echo $bam_file|awk -F ".REF_" '{print $2}'|cut -d. -f1)  
         output_file=${work_path}/06_split_chr_bam/scalpel_${chr_n}/variants.indel.vcf  
