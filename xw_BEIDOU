@@ -333,7 +333,7 @@ echo "The Parameters of $MYNAME:"
 cat $execute_para_file
 
 
-
+echo "$@"
 tmp_a="aa${function}aa"
 if [ "${tmp_a}" == "aaaa" ] || [ "${tmp_a}" == "aaall_stepsaa" ];then
 one_command_work_flow

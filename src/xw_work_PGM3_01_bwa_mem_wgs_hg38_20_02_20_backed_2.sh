@@ -189,11 +189,13 @@ threads_ctrl_for_step12_scalpel_indels(){
     else  
     count_threads_ctrl_for_step12_scalpel_indels=`echo "scale=0;$count_idles/1"|bc`  
     fi  
-    if [ $count_threads_ctrl_for_step12_scalpel_indels -gt 1 ];then
+    test_n=$(awk -v num1=$count_threads_ctrl_for_step12_scalpel_indels -v num2=1 'BEGIN{print(num1>num2)?"0":"1"}')
+    if [[ $test_n -eq 0 ]];then
     echo $count_threads_ctrl_for_step12_scalpel_indels  
     else
     echo 1
     fi
+    
 }  
 
 step7_HaplotypeCaller(){  
@@ -524,10 +526,17 @@ step12_scalpel_indels_parallel(){
         
         
         metc_n=`threads_ctrl_for_step12_scalpel_indels`
-        if [ "$metc_n" =="" ];then
+        if [ "$metc_n" == "" ];then
         metc_n=1
         fi 
-        
+        test_n=$(awk -v num1=`free  -m|awk 'NR==2{print $NF/1024}'` -v num2=100 'BEGIN{print(num1>num2)?"0":"1"}')
+        if [[ $test_n -eq 0 ]];then
+        threads_1=1
+        else
+        threads_1=5
+        fi
+        echo "free_m:`free  -m|awk 'NR==2{print $NF/1024}'`"
+        echo "threads_1:$threads_1"
         export -f scalpel_one_chr 
         export work_path scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed
         ${dir_of_parallel}/parallel -j $metc_n scalpel_one_chr ::: `ls -S ${work_path}/06_split_chr_bam/*.bam` 
@@ -556,9 +565,14 @@ step12_scalpel_indels_parallel(){
 }  
 scalpel_one_chr(){
     bam_file=$1
-    threads_1=5 
-    if [[ `echo $bam_file|grep  chr1.bam` ]];then
+    test_n=$(awk -v num1=`free  -m|awk 'NR==2{print $NF/1024}'` -v num2=100 'BEGIN{print(num1>num2)?"0":"1"}')
+    if [[ $test_n -eq 0 ]];then
+    threads_1=1
+    else
     threads_1=5
+    fi
+    if ([[ `echo $bam_file|grep  chr1.bam` ]]||[[ `echo $bam_file|grep  chr2.bam` ]]||[[ `echo $bam_file|grep  chr3.bam` ]]||[[ `echo $bam_file|grep  chr4.bam` ]])&&([[ $threads_1 -eq 1 ]]);then
+    threads_1=2
     fi
 
     #work_path  scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed 
