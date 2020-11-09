@@ -239,7 +239,7 @@ step7_HaplotypeCaller(){
     echo "##Time `date +"%R %d %m"` hap finished"  
     }  
 
-    NOT_RUN=True
+    NOT_RUN=False
     
     if ([ "$NOT_RUN" != "True" ]) && ( ([ ! -s "${work_path}/${name}_09_SNVs_VQSR.vcf.gz" ] || [ ! -s "${work_path}/${name}_09_indels_VQSR.vcf.gz" ]) || ( [ "${Patch}" != "True" ])) ;then  
     {  
