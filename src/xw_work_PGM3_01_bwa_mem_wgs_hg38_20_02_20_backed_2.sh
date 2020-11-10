@@ -580,11 +580,11 @@ scalpel_one_chr(){
         output_file=${work_path}/06_split_chr_bam/scalpel_${chr_n}/variants.indel.vcf  
         test -s $output_file  &&{  
             echo $output_file >>$scalpel_indels_list  
-            continue  
+            return 0  
         }|| echo "BEGIN $output_file"  
         test -d ${work_path}/06_split_chr_bam/scalpel_${chr_n} && rm -rf ${work_path}/06_split_chr_bam/scalpel_${chr_n}  
         ${dir_of_samtools}/samtools quickcheck $bam_file || {  
-            echo $bam_file error;continue  
+            echo $bam_file error;return 1  
             }  
     {  
         rm -f ${bam_file}.bai  
