@@ -282,7 +282,7 @@ one_command_work_flow(){
 SNV_calling_work_flow(){
     bash ${MYDIR}/src/xw_work_PGM3_01_bwa_mem_wgs_hg38_20_02_20_backed_2.sh -1 ${fq1} -2 ${fq2} -o ${work_path} -n $name -p "$patch_flag" -c $execute_para_file -t $threads -g $genome_build_version -m "SNV" -s $Patch_For_Scapel
     #bash ${MYDIR}/src/xw_work_PGM3_02_indels_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
-    test -e ${work_path}/${name}_Main_stream_ok && bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
+     bash ${MYDIR}/src/xw_work_PGM3_02_SNVs_d10_af10.sh -o ${work_path} -n $name -c $execute_para_file
     rm -f ${work_path}/${name}_Main_stream_ok
 }
 Indel_calling_work_flow(){
