@@ -45,6 +45,9 @@ select_v_ID_pl=${MYDIR}/select_v_ID.pl
 ln -sf ${work_path}/${name}_09_SNVs_VQSR.vcf.gz ${work_path}/${name}_10_SNVs_gatk_total.vcf.gz
 ln -sf ${work_path}/${name}_SNVs_lofreq.vcf ${work_path}/${name}_10_SNVs_lofreq_total.vcf
 ln -sf ${work_path}/${name}_SNVs_strelka2.vcf.gz ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz
+if [ ! -s ${work_path}/${name}_10_SNVs_gatk_total.vcf.gz ]|| [ ! -s ${work_path}/${name}_10_SNVs_lofreq_total.vcf ]||[ ! -s ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz ];then
+exit
+fi
 
 tabix -fp vcf ${work_path}/${name}_10_SNVs_gatk_total.vcf.gz
 tabix -fp vcf ${work_path}/${name}_10_SNVs_strelka2_total.vcf.gz 
@@ -119,6 +122,13 @@ awk '{if(($5~"[Gg]")&&($6~"[Aa]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/$
 awk '{if(($5~"[Gg]")&&($6~"[Aa]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_strelka2_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_G2A.txt
 cat <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_G2A.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_G2A.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_G2A.txt|sort -u) |sort |uniq -c |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites
 
+###### Thu Apr 2 10:01:21 CST 2020
+file1="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
+file2="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_C2T.sites"
+output_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A-C2T.sites"
+#check_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
+#check_file="${work_path}/${name}$file_suffix"
+cat $file1 $file2 >$output_file
 
 #mv ${work_path}/${name}_11* ${work_path}/Novel_SNVs_d10_af10/${name}_12* ${work_path}/Novel_SNVs_d10_af10/${name}_13* ${work_path}/Novel_SNVs_d10_af10/${name}_14* ${work_path}/Novel_SNVs_d10_af10/${name}_15* Novel_SNVs_d10_af10
 NOT_RUN=True
@@ -142,13 +152,4 @@ samtools view 06_BQSR.bam chr6:83188745-83188746 |wc -l
 
 }
 fi
-Patch_1(){
-    ###### Thu Apr 2 10:01:21 CST 2020
-    file1="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
-    file2="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_C2T.sites"
-    output_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A-C2T.sites"
-    #check_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
-    #check_file="${work_path}/${name}$file_suffix"
-    cat $file1 $file2 >$output_file
-}
-Patch_1
+
