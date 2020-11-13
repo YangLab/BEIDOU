@@ -223,7 +223,7 @@ step7_HaplotypeCaller(){
     do  
     hap_out_split_chr=${work_path}/hap_split_chr/${name}_${chrn}_07_HC.vcf.gz  
     #echo ${dir_of_gatk}/gatk --java-options \"-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true\" HaplotypeCaller -I $hap_in_bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn  
-    ${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn &  
+    test -s $hap_out_split_chr ||${dir_of_gatk}/gatk --java-options "-Xmx30g -Xms10g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" HaplotypeCaller -I ${work_path}/${name}_06_BQSR.bam -R ${ref_genome_path} -O $hap_out_split_chr -L $chrn &  
     metc `threads_ctrl_for_step7_HaplotypeCaller`  
     done  
     wait  
