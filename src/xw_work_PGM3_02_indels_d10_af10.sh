@@ -46,6 +46,7 @@ ln -sf ${work_path}/${name}_09_indels_VQSR.vcf.gz ${work_path}/${name}_10_indels
 test -s ${work_path}/${name}_10_indels_scalpel_total.vcf ||ln -sf ${work_path}/${name}_scalpel_indels.vcf ${work_path}/${name}_10_indels_scalpel_total.vcf
 ln -sf ${work_path}/${name}_09_indels_strelka2.vcf.gz  ${work_path}/${name}_10_indels_strelka2_total.vcf.gz
 if [ ! -s ${work_path}/${name}_10_indels_gatk_total.vcf.gz ]|| [ ! -s ${work_path}/${name}_10_indels_scalpel_total.vcf ]||[ ! -s ${work_path}/${name}_10_indels_strelka2_total.vcf.gz ];then
+ls ${work_path}/${name}_10_indels_gatk_total.vcf.gz ${work_path}/${name}_10_indels_scalpel_total.vcf  ${work_path}/${name}_10_indels_strelka2_total.vcf.gz
 exit
 fi
 #%s/_scalpel_indels.vcf/_10_indels_scalpel_total.vcf/g
