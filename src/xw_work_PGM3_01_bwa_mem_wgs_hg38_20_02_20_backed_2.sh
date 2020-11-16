@@ -567,16 +567,16 @@ scalpel_one_chr(){
     bam_file=$1
     test_n=$(awk -v num1=`free  -m|awk 'NR==2{print $NF/1024}'` -v num2=100 'BEGIN{print(num1>num2)?"0":"1"}')
     if [[ $test_n -eq 0 ]];then
-    threads_1=1
+    threads_1=5
     else
     threads_1=5
     fi
-    if ([[ `echo $bam_file|grep  chr1.bam` ]]||[[ `echo $bam_file|grep  chr2.bam` ]]||[[ `echo $bam_file|grep  chr3.bam` ]]||[[ `echo $bam_file|grep  chr4.bam` ]])&&([[ $threads_1 -eq 1 ]]);then
-    threads_1=2
+    if [[ `echo $bam_file|grep  -e chr1.bam -e chr2.bam -e chr3.bam -e chr4.bam -e chr5.bam -e chr6.bam` ]]&&([[ $threads_1 -eq 5 ]]);then
+    threads_1=10
     fi
-
     #work_path  scalpel_indels_list dir_of_samtools dir_of_Scalpel dir_of_individual_chr_ref_genome_path dir_of_individual_chr_genome_range_bed 
     chr_n=$(echo $bam_file|awk -F ".REF_" '{print $2}'|cut -d. -f1)  
+    [[ -d ${work_path}/06_split_chr_bam/scalpel_${chr_n} ]]&& return 0
         output_file=${work_path}/06_split_chr_bam/scalpel_${chr_n}/variants.indel.vcf  
         test -s $output_file  &&{  
             echo $output_file >>$scalpel_indels_list  
