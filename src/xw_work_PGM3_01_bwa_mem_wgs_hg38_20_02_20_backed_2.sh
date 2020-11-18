@@ -568,9 +568,9 @@ scalpel_one_chr(){
     bam_file=$1
     test_n=$(awk -v num1=`free  -m|awk 'NR==2{print $NF/1024}'` -v num2=100 'BEGIN{print(num1>num2)?"0":"1"}')
     if [[ $test_n -eq 0 ]];then
-    threads_1=5
+    threads_1=10
     else
-    threads_1=5
+    threads_1=10
     fi
     if [[ `echo $bam_file|grep  -e chr1.bam -e chr2.bam -e chr3.bam -e chr4.bam -e chr5.bam -e chr6.bam` ]]&&([[ $threads_1 -eq 1 ]]);then
     threads_1=2
@@ -639,7 +639,6 @@ if [ -e ${work_path}/06_split_chr_bam/split_bam_ok  ];then
 # step12_scalpel_indels 
 step12_scalpel_indels_parallel
 wait  
-exit  
 else  
 echo ${work_path}/06_split_chr_bam/split_bam_ok " not exists" 
 exit  
