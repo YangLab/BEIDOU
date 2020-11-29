@@ -646,28 +646,18 @@ fi
 fi  
 fi
 
-echo 1
 step01_06_construct_bam  
-echo 2
 
 
 if [ "$mutation_type" != "SNV" ];then  
-echo 3
 step12_1_split_bam &  
-echo 4
 fi  
-echo 5
 step7_HaplotypeCaller  
-echo 6
 
 if [ "$mutation_type" != "Indel" ];then  
-echo 7
 step8_SNVs_strelka2  
-echo 7.5
 step9_SNVs_lofreq  
-echo 8
 fi  
-echo 9
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
