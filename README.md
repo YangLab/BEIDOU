@@ -1,5 +1,5 @@
 # BEIDOU 
-**B**ase/prime **E**ditor  
+**B**ase/Prime **E**ditor **I**nduced **D**NA **O**ff-target site identification **U**nified toolkit
 
 *About the name: "BeiDou" is also the name of China's navigation satellite system*
 
@@ -7,8 +7,8 @@
 
 ## Schema
 ![image](doc/BEIDOU_workflow.001.png)
-
-Maintainer: Wei Xue(xuewei@picb.ac.cn) and Zhi-Can Fu(fuzhican@picb.ac.cn)
+Authors: Wei Xue(xuewei@picb.ac.cn), Zhi-Can Fu(fuzhican@picb.ac.cn) and Li Yang (liyang@picb.ac.cn)
+Maintainer: Zhi-Can Fu(fuzhican@picb.ac.cn)
 
 -----------------------------------
 
