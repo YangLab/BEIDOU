@@ -14,7 +14,7 @@ Maintainer: Zhi-Can Fu(fuzhican@picb.ac.cn)
 
 ## Installation requirements [mandatory]
 * Software
-    - bwa (version 0.7.17-r1188)
+    - [bwa](https://github.com/lh3/bwa) [(version 0.7.17-r1188)](https://github.com/lh3/bwa/releases/tag/v0.7.17)
     - perl (version 5.26.2)
     - samtools (version 1.9)
     - bedtools (version 2.28.0)
@@ -120,4 +120,4 @@ Runze Gao#, Zhi-Can Fu#, Xiangyang Li#, Ying Wang#, Jia Wei, Guangye Li, Lijie W
 -----------------------------------
 
 ## License
-Copyright (C) 2020 YangLab. Licensed GPLv3 for open source use or contact YangLab (yanglab@@picb.ac.cn) for commercial use.
+Copyright (C) 2020 YangLab. Licensed GPLv3 for open source use or contact YangLab (yanglab@picb.ac.cn) for commercial use.
