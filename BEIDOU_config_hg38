@@ -13,7 +13,6 @@ dir_of_perl=/picb/rnomics3/xuew/software/anaconda2019/bin
 dir_of_parallel=/picb/rnomics3/xuew/software/anaconda2019/bin
 dir_of_intersectBed=/picb/rnomics3/xuew/software/anaconda2019/bin
 #[ref_genome]
-genome_range_bed=/picb/rnomics3/xuew/Human/backup/hg38_common/hg38_all.bed
 ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.fa
 dict_of_ref_genome_path=/picb/rnomics3/xuew/Human/backup/hg38_bwa_mem/hg38_all.dict
 #[vcf_files_for_BaseRecalibrator]

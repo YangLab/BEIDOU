@@ -258,17 +258,16 @@ echo "[`date`]Finish check_optional_para"
 
 help_print(){
 test -z $genome_build_version && genome_build_version=GENOME_BUILD_VERSION
-echo "Usage: `basename $0` -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_name -c Path_of_config_file -t number_of_maximum_threads -g genome_build_version -d tmp_folder";
-
-      echo "       [-1 Path_of_fastq1]";
-      echo "       [-2 Path_of_fastq2]";
-      echo "       [-o Output_directory(default current directory)]";
-      echo "       [-n Output_name]";
-      echo "       [-c Path_of_config_file(default ${MYDIR}/${MYNAME}_config_${genome_build_version})]";
-      echo "       [-t number_of_maximum_threads]";
-      echo "       [-g genome_build_version, \"hg38\" or \"mm10\"]";
-      echo "       [-f future parameter, specific step within Read_mapping, Variants_identification, De_novo_filters and all_steps(default all_steps)]";
-      echo "       [-d wirtable temporary folder]";
+echo "Usage: `basename $0` -f Function -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_name -c Path_of_config_file -t number_of_maximum_threads -g genome_build_version -d tmp_folder";
+      echo "       [-f Function, \"SNV\", \"Indel\" or \"all_steps\"(default all_steps)]";
+      echo "       [-1 Path of fastq1]";
+      echo "       [-2 Path of fastq2]";
+      echo "       [-o Output directory(default current directory)]";
+      echo "       [-n Output name]";
+      echo "       [-c Path of config file(default ${MYDIR}/${MYNAME}_config_${genome_build_version})]";
+      echo "       [-t Maximum_threads]";
+      echo "       [-g Genome build version, \"hg38\" or \"mm10\"]";
+      echo "       [-d wirtable temporary folder(default [Output directory]/BEIDOU_tmp)]";
       exit 1
 
 }
