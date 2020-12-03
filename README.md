@@ -74,7 +74,7 @@ BEIDOU -f Function -1 Path_of_fastq1 -2 Path_of_fastq2 -o Output_path -n Output_
 
 
 ## Output
-* **[Output directory]/[Output name]_Novel_SNVs and/or [Output directory]/[Output name]_Novel_Indels** is the result of BEIDOU pipeline.
+* **[Output directory]/[Output name]_Novel_SNVs** and/or **[Output directory]/[Output name]_Novel_Indels** is the result of BEIDOU pipeline.
 
 -----------------------------------
 
