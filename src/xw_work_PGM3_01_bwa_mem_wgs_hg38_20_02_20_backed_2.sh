@@ -664,10 +664,10 @@ fi
 if [ "$mutation_type" != "SNV" ];then  
 step10_indels_Manta  
 step11_indels_strelka2  
-# if [ $(id -u) != "5158" ]||([[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]);then  
+if [ $(id -u) != "5158" ]||([[ $(uname -n) == "liyang-svr5.icb.ac.cn" ]]);then  
 
 step12_scalpel_indels  
-# fi  
+fi  
 fi  
 
 wait  
