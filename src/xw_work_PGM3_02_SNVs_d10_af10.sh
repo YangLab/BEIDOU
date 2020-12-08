@@ -111,24 +111,32 @@ cut -f 4 ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_strelka2_d10_af10_novel
 cat ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_gatk_d10_af10_novel.sites ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_lofreq_d10_af10_novel.sites ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_strelka2_d10_af10_novel.sites |sort |uniq -c |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_14_overlap_d10_af10_novel.sites
 
 # 15. variants
+for nul_mut in "C_T;G_A" "C_A;G_T" "C_G;G_C";do
+nul1=`echo $nul_mut|awk -F"[;_]" '{print $1}'`
+mut1=`echo $nul_mut|awk -F"[;_]" '{print $2}'`
+nul2=`echo $nul_mut|awk -F"[;_]" '{print $3}'`
+mut2=`echo $nul_mut|awk -F"[;_]" '{print $4}'`
+
 # C-to-T
-awk '{if(($5~"[Cc]")&&($6~"[Tc]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_gatk_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_C2T.txt
-awk '{if(($5~"[Cc]")&&($6~"[Tc]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_lofreq_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_C2T.txt
-awk '{if(($5~"[Cc]")&&($6~"[Tc]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_strelka2_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_C2T.txt
-cat <(cut -f4 ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_C2T.txt|sort -u) <(cut -f4 ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_C2T.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_C2T.txt|sort -u)|sort |uniq -c  |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_C2T.sites
+for software in  gatk  lofreq strelka2;do 
+awk 'toupper($5)=="'$nul1'"&&toupper($6)=="'$mut1'"' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_${software}_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_${software}_d10_af10_${nul1}2${mut1}.txt
+done
+cat <(cut -f4 ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_${nul1}2${mut1}.txt|sort -u) <(cut -f4 ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_${nul1}2${mut1}.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_${nul1}2${mut1}.txt|sort -u)|sort |uniq -c |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_${nul1}2${mut1}.sites
 # G-to-A
-awk '{if(($5~"[Gg]")&&($6~"[Aa]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_gatk_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_G2A.txt
-awk '{if(($5~"[Gg]")&&($6~"[Aa]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_lofreq_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_G2A.txt
-awk '{if(($5~"[Gg]")&&($6~"[Aa]")) print $0}' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_strelka2_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_G2A.txt
-cat <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_G2A.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_G2A.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_G2A.txt|sort -u) |sort |uniq -c |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites
+for software in  gatk  lofreq strelka2;do 
+awk 'toupper($5)=="'$nul2'"&&toupper($6)=="'$mut2'"' ${work_path}/Novel_SNVs_d10_af10/${name}_14_all_${software}_d10_af10_novel.txt > ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_${software}_d10_af10_${nul2}2${mut2}.txt
+done
+
+cat <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_gatk_d10_af10_${nul2}2${mut2}.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_lofreq_d10_af10_${nul2}2${mut2}.txt|sort -u) <(cut -f4  ${work_path}/Novel_SNVs_d10_af10/${name}_15_all_strelka2_d10_af10_${nul2}2${mut2}.txt|sort -u) |sort |uniq -c |awk -F" " '$1==3{print $2}' > ${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_${nul2}2${mut2}.sites
 
 ###### Thu Apr 2 10:01:21 CST 2020
-file1="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
-file2="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_C2T.sites"
-output_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A-C2T.sites"
+file1="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_${nul1}2${mut1}.sites"
+file2="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_${nul2}2${mut2}.sites"
+output_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_${nul1}2${mut1}-${nul2}2${mut2}.sites"
 #check_file="${work_path}/Novel_SNVs_d10_af10/${name}_15_overlap_d10_af10_G2A.sites"
 #check_file="${work_path}/${name}$file_suffix"
 cat $file1 $file2 >$output_file
+done
 
 #mv ${work_path}/${name}_11* ${work_path}/Novel_SNVs_d10_af10/${name}_12* ${work_path}/Novel_SNVs_d10_af10/${name}_13* ${work_path}/Novel_SNVs_d10_af10/${name}_14* ${work_path}/Novel_SNVs_d10_af10/${name}_15* Novel_SNVs_d10_af10
 NOT_RUN=True
