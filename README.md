@@ -48,10 +48,10 @@ Maintainer: Zhi-Can Fu(fuzhican@picb.ac.cn)
     - **[MGP_indel_v5.vcf.gz](https://console.cloud.google.com/storage/browser/_details/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz)** 
 * files used to filter out the background variants(Human)
     - **[NCBI_dbSNP_all_hg38.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf.gz)** 
-    - **[UCSC_RepeatMask_hg38.bed](https://genome.ucsc.edu/cgi-bin/hgTables)** 
+    - **[UCSC_RepeatMask_hg38.bed](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz)** 
 * files used to filter out the background variants(Mouse)
     - **[EVA_SNP_all_mm10.vcf.gz](http://ftp.ebi.ac.uk/pub/databases/eva/rs_releases/release_1/by_species/Mouse_10090/GRCm38.p4/GCA_000001635.6_current_ids.vcf.gz)** 
-    - **[UCSC_RepeatMask_mm10.bed](https://genome.ucsc.edu/cgi-bin/hgTables)** 
+    - **[UCSC_RepeatMask_mm10.bed](http://hgdownload.soe.ucsc.edu/goldenPath/mm10/database/rmsk.txt.gz)** 
 
 ## Installation
 ```bash
