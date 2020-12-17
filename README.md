@@ -44,8 +44,8 @@ Maintainer: Zhi-Can Fu(fuzhican@picb.ac.cn)
     - **[Mills_and_1000G_gold_standard.indels.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/_details/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz)** 
 * vcfs for GATK VariantRecalibrator(Mouse)
     - **[EVA_SNP_all_mm10.vcf.gz](http://ftp.ebi.ac.uk/pub/databases/eva/rs_releases/release_1/by_species/Mouse_10090/GRCm38.p4/GCA_000001635.6_current_ids.vcf.gz)** 
-    - **[MGP_SNP_indel_v5.vcf.gz](https://console.cloud.google.com/storage/browser/_details/genomics-public-data/resources/broad/hg38/v0/1000G_omni2.5.hg38.vcf.gz)** 
-    - **[MGP_indel_v5.vcf.gz](https://console.cloud.google.com/storage/browser/_details/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz)** 
+    - **[MGP_SNP_indel_v5.vcf.gz]**\(merged from [MGP_SNP_v5.vcf.gz](ftp://ftp-mouse.sanger.ac.uk/current_snps/mgp.v5.merged.snps_all.dbSNP142.vcf.gz) and [MGP_indel_v5.vcf.gz](ftp://ftp-mouse.sanger.ac.uk/current_snps/mgp.v5.merged.indels.dbSNP142.normed.vcf.gz)\)
+    - **[MGP_indel_v5.vcf.gz](ftp://ftp-mouse.sanger.ac.uk/current_snps/mgp.v5.merged.indels.dbSNP142.normed.vcf.gz)** 
 * files used to filter out the background variants(Human)
     - **[NCBI_dbSNP_all_hg38.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf.gz)** 
     - **[UCSC_RepeatMask_hg38.bed](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz)** 
