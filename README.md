@@ -1,6 +1,6 @@
 # BEIDOU 
 **B**ase/Prime **E**ditor **I**nduced **D**NA **O**ff-target site identification **U**nified toolkit
-
+\nVersion: 1.0.0
 *About the name: "BeiDou" is also the name of China's navigation satellite system*
 
 -----------------------------------
